@@ -22,15 +22,12 @@ public class FullScreenTriPass : ScriptableRenderPass
     {
         colorTargetHandle = cameraColorHandle;
     }
-
-    // Método necesario para Render Graph en Unity 6+
+    
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
     {
-        // Obtener datos de recursos y cámara
-        UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
-        UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
-
-        // Si el buffer activo es el back buffer, salimos
+        var resourceData = frameData.Get<UniversalResourceData>();
+        var cameraData = frameData.Get<UniversalCameraData>();
+        
         if (resourceData.isActiveTargetBackBuffer)
             return;
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class SphereFieldCameraController : MonoBehaviour
 {
@@ -7,14 +8,14 @@ public class SphereFieldCameraController : MonoBehaviour
     private static readonly int CamRight = Shader.PropertyToID("cam_right");
     private static readonly int CamUp = Shader.PropertyToID("cam_up");
 
-    [Header("Referencias")]
+    [Header("References")]
     public Camera mainCamera;
-    public Material raymarchMaterial;
+    [FormerlySerializedAs("raymarchMaterial")] public Material rayMarchMaterial;
 
-    [Header("Movimiento")]
+    [Header("Movement")]
     public float moveSpeed = 5f;
 
-    [Header("Rotación con ratón")]
+    [Header("Mouse rotation")]
     public float mouseSensitivity = 2.0f;
     public float minPitch = -85f;  // límite de rotación vertical
     public float maxPitch = 85f;
@@ -34,9 +35,9 @@ public class SphereFieldCameraController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        if (!raymarchMaterial)
+        if (!rayMarchMaterial)
         {
-            Debug.LogError("Asigna el material que use el shader ‘CleanCodeInfiniteSphereField_Nav’ en SphereFieldCameraController.");
+            Debug.LogError("Assign correct shader material to the sphere field camera controller");
         }
     }
 
@@ -91,22 +92,22 @@ public class SphereFieldCameraController : MonoBehaviour
     // --------------------------------------------------------
     private void UpdateShaderCameraParams()
     {
-        if (!raymarchMaterial) return;
+        if (!rayMarchMaterial) return;
 
         // 1) Posición de la cámara
         Vector3 camPos = mainCamera.transform.position;
-        raymarchMaterial.SetVector(CamPos, new Vector4(camPos.x, camPos.y, camPos.z, 0));
+        rayMarchMaterial.SetVector(CamPos, new Vector4(camPos.x, camPos.y, camPos.z, 0));
 
         // 2) Vector “forward” en world space
         Vector3 forward = mainCamera.transform.forward.normalized;
-        raymarchMaterial.SetVector(CamForward, new Vector4(forward.x, forward.y, forward.z, 0));
+        rayMarchMaterial.SetVector(CamForward, new Vector4(forward.x, forward.y, forward.z, 0));
 
         // 3) Vector “right” en world space
         Vector3 right = mainCamera.transform.right.normalized;
-        raymarchMaterial.SetVector(CamRight, new Vector4(right.x, right.y, right.z, 0));
+        rayMarchMaterial.SetVector(CamRight, new Vector4(right.x, right.y, right.z, 0));
 
         // 4) Vector “up” en world space
         Vector3 up = mainCamera.transform.up.normalized;
-        raymarchMaterial.SetVector(CamUp, new Vector4(up.x, up.y, up.z, 0));
+        rayMarchMaterial.SetVector(CamUp, new Vector4(up.x, up.y, up.z, 0));
     }
 }
