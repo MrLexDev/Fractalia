@@ -35,7 +35,7 @@ float4 fragment_render_infinite_sphere_field(vertex_output IN) : SV_Target
     // 4.6) Sombreado lambertiano
     float3 light_dir    = normalize(float3(0.5, 0.7, -1.0));
     float  lambert_term = saturate(dot(normal_hit, light_dir));
-    float3 shaded_color = base_color.rgb * lambert_term;
+    float3 shaded_color = base_color.rgb * lambert_term * ambient_occlusion(hit_point, normal_hit);
 
     return float4(shaded_color, 1.0);
 }

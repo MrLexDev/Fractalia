@@ -14,17 +14,14 @@ float fractal_signed_distance(float3 position);
 // ------------------------------------------------------------
 float perform_ray_marching(float3 ray_origin, float3 ray_dir)
 {
-    const int   MAX_STEPS        = 64;
-    const float SURFACE_EPSILON  = 0.001;
-
     float distance_traveled = 0.0;
 
-    for (int i = 0; i < MAX_STEPS; i++)
+    for (int i = 0; i < max_steps; i++)
     {
         float3 sample_point  = ray_origin + ray_dir * distance_traveled;
         float distance_to_surface = fractal_signed_distance(sample_point);
 
-        if (distance_to_surface < SURFACE_EPSILON)
+        if (distance_to_surface < surface_epsilon)
         {
             // Hemos llegado lo suficientemente cerca de "la esfera"
             return distance_traveled;

@@ -7,12 +7,19 @@ Shader "Custom/RayMarchRenderer"
         cam_right           ("Camera Right",        Vector) = (1,0,0,0)
         cam_up              ("Camera Up",           Vector) = (0,1,0,0)
 
-        sphere_radius       ("Sphere Radius",       Float)  = 1.0
-        cell_size           ("Repeat Cell Size",    Float)  = 4.0
         base_color          ("Sphere Base Color",   Color)  = (0.2, 0.6, 1.0, 1.0)
         max_ray_distance    ("Max Ray Distance",    Float)  = 100.0
+        surface_epsilon     ("Surface Epsilon",     Float)  = 0.001
+        max_steps           ("Max Steps",           Int)    = 64
+        normal_delta        ("Normal Delta",        Float)  = 0.0005
+        bailout             ("Bailout",             Int)    = 4
         
-        iterations          ("Iterations",          int)    = 10
+        MB_SCALE            ("MB_SCALE",            Float)    = 2
+        MB_MIN_RADIUS       ("MB_MIN_RADIUS",       Float)    = 0.5
+        MB_FIXED_RADIUS     ("MB_FIXED_RADIUS",     Float)    = 1
+        MB_BOX_LIMIT        ("MB_BOX_LIMIT",        Float)    = 1
+        
+        iterations          ("Iterations",          Int)    = 10
         power               ("Power",               Float)  = 4.0
     }
 
