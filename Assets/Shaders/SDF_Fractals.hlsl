@@ -1,46 +1,60 @@
 // ------------------------------------------------------------
-// --- Funciones para el Fractal Iterativo ---
+// 1) Función SDF del fractal (Mandelbulb 3D)
 // ------------------------------------------------------------
-
-
-float fractal_signed_distance(float3 position, float overall_cell_size, int iterations, float fractal_scale, float3 fractal_offset)
+float fractal_signed_distance(float3 position)
 {
     float3 z = position;
-    float scale_accumulator = 1.0;
+    float radius_derivative = 1.0;
+    float radius  = 0.0;
 
     for (int i = 0; i < iterations; ++i)
     {
-        z = abs(z);
+        radius = length(z);
+        if (radius > 2.0) 
+            break;
 
-        z = z - fractal_offset;
-        z = z * fractal_scale;  
-        scale_accumulator *= fractal_scale;
+        // Convertir a coordenadas esféricas
+        float theta = acos(z.z / radius);
+        float phi   = atan2(z.y, z.x);
+
+        // Derivada para el factor de escape (dr)
+        radius_derivative  = pow(radius, power - 1.0) * power * radius_derivative  + 1.0;
+
+        // Elevamos r^POWER y multiplicamos los ángulos por POWER
+        float zr = pow(radius, power);
+        theta *= power;
+        phi   *= power;
+
+        // Reconstruir z en coordenadas cartesianas
+        float sinTheta = sin(theta);
+        float3 zNew = float3(
+            zr * sinTheta * cos(phi),
+            zr * sinTheta * sin(phi),
+            zr * cos(theta)
+        );
+
+        // Iteración de z_{n+1} = zNew + pos (atracción hacia el punto original)
+        z = zNew + position;
     }
-    return length(z) / scale_accumulator;
+
+    // Distancia aproximada según la fórmula del Mandelbulb SDF
+    return 0.5 * log(radius) * radius / radius_derivative ;
 }
 
+
 // ------------------------------------------------------------
-// EstimateNormalFromFractalSdf:
-//   Aproxima la normal en 'position' usando diferencias finitas sobre FractalSignedDistance.
-//   Los parámetros del fractal deben coincidir con los usados en FractalSignedDistance.
+// 2) Normal estimation basada en la SDF del fractal
 // ------------------------------------------------------------
-float3 estimate_normal_from_fractal_sdf(float3 position, float overall_cell_size, int iterations, float fractal_scale, float3 fractal_offset)
+float3 estimate_normal_from_fractal_sdf(float3 p)
 {
-    const float DELTA = 0.0001; // Un delta pequeño para las diferencias finitas.
-                                // Puede necesitar ajuste según la escala del fractal.
-    float3 offset_x = float3(DELTA, 0, 0);
-    float3 offset_y = float3(0, DELTA, 0);
-    float3 offset_z = float3(0, 0, DELTA);
+    const float DELTA = 0.0005;
+    float3 dx = float3(DELTA, 0.0, 0.0);
+    float3 dy = float3(0.0, DELTA, 0.0);
+    float3 dz = float3(0.0, 0.0, DELTA);
 
-    // Calcular la SDF en puntos cercanos para estimar el gradiente.
-    float dist_x1 = fractal_signed_distance(position + offset_x, overall_cell_size, iterations, fractal_scale, fractal_offset);
-    float dist_x2 = fractal_signed_distance(position - offset_x, overall_cell_size, iterations, fractal_scale, fractal_offset);
-    float dist_y1 = fractal_signed_distance(position + offset_y, overall_cell_size, iterations, fractal_scale, fractal_offset);
-    float dist_y2 = fractal_signed_distance(position - offset_y, overall_cell_size, iterations, fractal_scale, fractal_offset);
-    float dist_z1 = fractal_signed_distance(position + offset_z, overall_cell_size, iterations, fractal_scale, fractal_offset);
-    float dist_z2 = fractal_signed_distance(position - offset_z, overall_cell_size, iterations, fractal_scale, fractal_offset);
+    float nx = fractal_signed_distance(p + dx) - fractal_signed_distance(p - dx);
+    float ny = fractal_signed_distance(p + dy) - fractal_signed_distance(p - dy);
+    float nz = fractal_signed_distance(p + dz) - fractal_signed_distance(p - dz);
 
-    float3 gradient = float3(dist_x1 - dist_x2, dist_y1 - dist_y2, dist_z1 - dist_z2);
-
-    return normalize(gradient);
+    return normalize(float3(nx, ny, nz));
 }

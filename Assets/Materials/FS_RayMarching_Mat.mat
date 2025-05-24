@@ -120,9 +120,11 @@ Material:
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
-    - cell_size: 4.48
+    - cell_size: 4.43
+    - iterations: 10
     - max_ray_distance: 390.4
-    - sphere_radius: 1.26
+    - power: 4
+    - sphere_radius: 1.4
     m_Colors:
     - _BaseColor: {r: 1, g: 0, b: 0, a: 1}
     - _CamForward: {r: 0, g: 0, b: 1, a: 0}
@@ -134,10 +136,10 @@ Material:
     - _LightDir: {r: 1, g: 1, b: -1, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - base_color: {r: 0.19999996, g: 0.6, b: 1, a: 1}
-    - cam_forward: {r: 0.093942285, g: 0.05930637, b: 0.99380964, a: 0}
-    - cam_pos: {r: 0, g: 1, b: -10, a: 0}
-    - cam_right: {r: 0.995562, g: -2.3283064e-10, b: -0.094107926, a: 0}
-    - cam_up: {r: -0.005581199, g: 0.9982398, b: -0.05904317, a: 0}
+    - cam_forward: {r: 0.17067164, g: -0.9205049, b: 0.3514853, a: 0}
+    - cam_pos: {r: -0.7182109, g: -0.6198637, b: -2.0539112, a: 0}
+    - cam_right: {r: 0.8995583, g: 0.000000014901161, b: -0.43680072, a: 0}
+    - cam_up: {r: 0.4020772, g: 0.39073104, b: 0.8280479, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &4785929847013466859

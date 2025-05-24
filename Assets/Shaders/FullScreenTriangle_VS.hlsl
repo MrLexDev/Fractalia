@@ -1,5 +1,3 @@
-// FullScreenTriangle_VS.hlsl
-
 #ifndef FULL_SCREEN_TRIANGLE_VS_INCLUDED
 #define FULL_SCREEN_TRIANGLE_VS_INCLUDED
 
@@ -10,7 +8,6 @@ struct vertex_output
     float2 uv       : TEXCOORD0;
 };
 
-// Vertex Shader para un triángulo a pantalla completa
 vertex_output vertex_full_screen_triangle(uint vertex_id : SV_VertexID)
 {
     vertex_output output;
