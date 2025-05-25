@@ -35,7 +35,7 @@ Shader "Custom/RayMarchRenderer"
 
             HLSLPROGRAM
             #pragma vertex vertex_full_screen_triangle
-            #pragma fragment fragment_render_infinite_sphere_field
+            #pragma fragment fragment_render_fractal
 
             #include "FullScreenTriangle_VS.hlsl" 
             #include "RayMarch_FS.hlsl"

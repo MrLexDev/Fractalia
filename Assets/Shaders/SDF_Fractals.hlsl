@@ -1,3 +1,7 @@
+
+#ifndef SDF_FRACTALS_INCLUDED
+#define SDF_FRACTALS_INCLUDED
+
 // ------------------------------------------------------------
 // 1) Función SDF del fractal (Mandelbulb 3D)
 // ------------------------------------------------------------
@@ -98,7 +102,6 @@ float ambient_occlusion(float3 p, float3 normal)
 */
 
 // Parámetros generales (ajústalos según te convenga)
-static const int   MB_ITERATIONS  = 15;      // Número máximo de iteraciones
 /*
 static const float MB_SCALE       = 2.0;     // Factor de escalado (típicamente entre 2.0 y 3.0)
 static const float MB_MIN_RADIUS  = 0.5;     // Radio mínimo para el sphere-fold
@@ -109,17 +112,19 @@ static const float MB_BOX_LIMIT   = 1.0;     // Límite de box-fold en cada eje 
 // Delta para estimar normales (idéntico al ejemplo que diste)
 //static const float normal_delta = 0.0005;
 
-
 // -----------------------------------------------------------------------
 // 1) Distance Estimator (SDF) para Mandelbox
 // -----------------------------------------------------------------------
-float fractal_signed_distance(float3 position)
+
+
+
+float sdf_mandelbox(float3 position)
 {
     // Inicializamos z = p y derivada dr = 1
     float3 z = position;
     float dr = 1.0;
 
-    for (int i = 0; i < MB_ITERATIONS; i++)
+    for (int i = 0; i < iterations; i++)
     {
         // -----------------------
         // 1) Box-fold (fold en cada eje)
@@ -162,59 +167,43 @@ float fractal_signed_distance(float3 position)
 }
 
 
+
 // -----------------------------------------------------------------------
-// 2) Smooth SDF (para suavizar ruido al estimar normales)
+// SDF para una Pirámide de Sierpinski (Tetraedro de Sierpinski)
 // -----------------------------------------------------------------------
-float smooth_sdf(float3 p)
+static const int   SIERPINSKI_ITERATIONS = 30;
+static const float SIERPINSKI_SCALE      = 2.0;
+static const float3 SIERPINSKI_OFFSET_VEC = float3(1.0, 1.0, 1.0);
+
+static const float SIERPINSKI_STRUT_THICKNESS = 1.2; // Ajusta el "grosor" de las barras del fractal.
+                                                     // Corresponde al radio 'C' en la fórmula (length(p) - C) / s.
+                                                     // Un valor entre 1.0 y 1.5 suele funcionar bien con un OFFSET_VEC de magnitud sqrt(3).
+
+float fractal_signed_distance_sierpinski(float3 p)
 {
-    float center = fractal_signed_distance(p);
+    float accumulated_total_scale = 1.0;
 
-    float dx1 = fractal_signed_distance(p + float3(normal_delta, 0, 0));
-    float dx2 = fractal_signed_distance(p - float3(normal_delta, 0, 0));
-
-    float dy1 = fractal_signed_distance(p + float3(0, normal_delta, 0));
-    float dy2 = fractal_signed_distance(p - float3(0, normal_delta, 0));
-
-    float dz1 = fractal_signed_distance(p + float3(0, 0, normal_delta));
-    float dz2 = fractal_signed_distance(p - float3(0, 0, normal_delta));
-
-    float sum = center + dx1 + dx2 + dy1 + dy2 + dz1 + dz2;
-    return sum / 7.0;
-}
-
-
-// -----------------------------------------------------------------------
-// 3) Estimación de normales (basada en la SDF suavizada)
-// -----------------------------------------------------------------------
-float3 estimate_normal_from_fractal_sdf(float3 p)
-{
-    float3 dx = float3(normal_delta, 0.0,          0.0);
-    float3 dy = float3(0.0,          normal_delta, 0.0);
-    float3 dz = float3(0.0,          0.0,          normal_delta);
-
-    float nx = smooth_sdf(p + dx) - smooth_sdf(p - dx);
-    float ny = smooth_sdf(p + dy) - smooth_sdf(p - dy);
-    float nz = smooth_sdf(p + dz) - smooth_sdf(p - dz);
-
-    return normalize(float3(nx, ny, nz));
-}
-
-
-// -----------------------------------------------------------------------
-// 4) Ambient Occlusion aproximada
-// -----------------------------------------------------------------------
-float ambient_occlusion(float3 p, float3 normal)
-{
-    float ao = 0.0;
-    float sca = 1.0;
-
-    // Probamos 5 pasos a lo largo de la normal: usan la SDF directa (no suavizada)
-    for (int i = 1; i <= 5; i++)
+    for (int i = 0; i < SIERPINSKI_ITERATIONS; ++i)
     {
-        float dist = fractal_signed_distance(p + normal * (i * 0.1));
-        ao += (i * 0.1 - dist) * sca;
-        sca *= 0.5;
+        // Si p.x + p.y < 0, refleja p a través del plano x = -y
+        if (p.x + p.y < 0.0) { p.xy = float2(-p.y, -p.x); }
+        // Si p.x + p.z < 0, refleja p a través del plano x = -z
+        if (p.x + p.z < 0.0) { p.xz = float2(-p.z, -p.x); }
+        // Si p.y + p.z < 0, refleja p a través del plano y = -z
+        if (p.y + p.z < 0.0) { p.yz = float2(-p.z, -p.y); }
+        
+        p = p * SIERPINSKI_SCALE - SIERPINSKI_OFFSET_VEC * (SIERPINSKI_SCALE - 1.0);
+        
+        accumulated_total_scale *= SIERPINSKI_SCALE;
     }
-
-    return saturate(1.0 - ao);
+    return (length(p) - SIERPINSKI_STRUT_THICKNESS) / accumulated_total_scale;
 }
+
+
+float fractal_signed_distance(float3 position)
+{
+    return fractal_signed_distance_sierpinski(position);
+}
+
+
+#endif // SDF_FRACTALS_INCLUDED
