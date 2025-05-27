@@ -4,18 +4,18 @@
 
 float smooth_sdf(float3 p)
 {
-    float center = fractal_signed_distance(p);
+    fractal_output center = fractal_signed_distance(p);
 
-    float dx1 = fractal_signed_distance(p + float3(normal_delta, 0, 0));
-    float dx2 = fractal_signed_distance(p - float3(normal_delta, 0, 0));
+    fractal_output dx1 = fractal_signed_distance(p + float3(normal_delta, 0, 0));
+    fractal_output dx2 = fractal_signed_distance(p - float3(normal_delta, 0, 0));
 
-    float dy1 = fractal_signed_distance(p + float3(0, normal_delta, 0));
-    float dy2 = fractal_signed_distance(p - float3(0, normal_delta, 0));
+    fractal_output dy1 = fractal_signed_distance(p + float3(0, normal_delta, 0));
+    fractal_output dy2 = fractal_signed_distance(p - float3(0, normal_delta, 0));
 
-    float dz1 = fractal_signed_distance(p + float3(0, 0, normal_delta));
-    float dz2 = fractal_signed_distance(p - float3(0, 0, normal_delta));
+    fractal_output dz1 = fractal_signed_distance(p + float3(0, 0, normal_delta));
+    fractal_output dz2 = fractal_signed_distance(p - float3(0, 0, normal_delta));
 
-    float sum = center + dx1 + dx2 + dy1 + dy2 + dz1 + dz2;
+    float sum = center.sdf_distance + dx1.sdf_distance + dx2.sdf_distance + dy1.sdf_distance + dy2.sdf_distance + dz1.sdf_distance + dz2.sdf_distance;
     return sum / 7.0;
 }
 
@@ -32,19 +32,9 @@ float3 estimate_normal_from_fractal_sdf(float3 p)
     return normalize(float3(nx, ny, nz));
 }
 
-float ambient_occlusion(float3 p, float3 normal)
+float ambient_occlusion(int march_steps)
 {
-    float ao = 0.0;
-    float sca = 1.0;
-
-    for (int i = 1; i <= 5; i++)
-    {
-        float dist = fractal_signed_distance(p + normal * (i * 0.1));
-        ao += (i * 0.1 - dist) * sca;
-        sca *= 0.5;
-    }
-
-    return saturate(1.0 - ao);
+        return 1- ((float)march_steps / (float)max_steps);
 }
 
 

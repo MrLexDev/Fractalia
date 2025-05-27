@@ -21,11 +21,14 @@ CBUFFER_START(RaymarchProps)
         float MB_SCALE       = 2.0;     // Factor de escalado (típicamente entre 2.0 y 3.0)
         float MB_MIN_RADIUS  = 0.5;     // Radio mínimo para el sphere-fold
         float MB_FIXED_RADIUS= 1.0;     // Radio fijo para el sphere-fold
-        float MB_BOX_LIMIT   = 1.0; 
+        float MB_BOX_LIMIT   = 1.0;     // Límite de box-fold en cada eje (±1.0)
 
         // Parámetros del fractal
         int    iterations;
         float  power;
+
+        // Light
+        float3 light_direction;
     CBUFFER_END
 
 #endif // RAYMARCH_PROPS_INCLUDED
