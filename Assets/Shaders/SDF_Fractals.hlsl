@@ -24,8 +24,9 @@ fractal_output sdf_mandelbulb(float3 position)
         if (radius > bailout) 
             break;
 
-        // Convertir a coordenadas esféricas
-        float theta = acos(z.z / radius);
+        // Convertir a coordenadas esféricas evitando divisiones por cero
+        float invRadius = radius > 1e-6 ? 1.0 / radius : 0.0;
+        float theta = radius > 1e-6 ? acos(z.z * invRadius) : 0.0;
         float phi   = atan2(z.y, z.x);
 
         // Derivada para el factor de escape (radius_derivative)
