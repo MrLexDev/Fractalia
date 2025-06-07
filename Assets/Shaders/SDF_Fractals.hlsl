@@ -145,7 +145,7 @@ fractal_output sdf_sierpinski(float3 p)
 
 fractal_output fractal_signed_distance(float3 position)
 {
-    return sdf_sierpinski(position);
+    return sdf_mandelbulb(position);
 }
 
 

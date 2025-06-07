@@ -2,54 +2,10 @@
 #define RAYMARCH_FS_INCLUDED
 
 #include "RayMarchingUtilities.hlsl"
-#include "FullScreenTriangle_VS.hlsl"  // Para tener el vertex_output struct
+#include "FullScreenTriangle_VS.hlsl"
 #include "RayMarch_Properties.hlsl"
 #include "SDF_Lighting.hlsl"
 
-// Define estas constantes en algún lugar accesible, quizás al inicio de tu shader o en un archivo .hlslinc
-#define SHADOW_MAX_STEPS 64       // Número máximo de pasos para el rayo de sombra
-#define SHADOW_MAX_DISTANCE 100.0 // Distancia máxima que recorrerá el rayo de sombra (ajusta según la escala de tu fractal)
-#define MIN_SHADOW_HIT_DISTANCE 1e-3 // Umbral para considerar un impacto duro (opcional, para sombras más nítidas si se desea)
-#define SHADOW_RAY_INITIAL_OFFSET 1e-2 // Pequeño offset inicial para el rayo de sombra
-
-
-float soft_shadow(float3 ro, float3 rd, float k)
-{
-    float penumbra = 1.0;
-    float t = SHADOW_RAY_INITIAL_OFFSET;
-
-    for (int i = 0; i < SHADOW_MAX_STEPS; i++)
-    {
-        if (t >= SHADOW_MAX_DISTANCE) break;
-
-        float3 current_pos_on_shadow_ray = ro + rd * t;
-        
-        fractal_output h = fractal_signed_distance(current_pos_on_shadow_ray);
-
-        if (h.sdf_distance < MIN_SHADOW_HIT_DISTANCE) {
-            return 0.0; 
-        }
-        penumbra = min(penumbra, k * h.sdf_distance / t);
-        
-        //t += max(h, SHADOW_RAY_INITIAL_OFFSET * 0.5f); 
-        // Alternativa más segura pero potentially más lenta si h es consistentemente pequeño:
-        t += h.sdf_distance;
-        if (h.sdf_distance < MIN_SHADOW_HIT_DISTANCE * 0.1) t += MIN_SHADOW_HIT_DISTANCE * 0.1; // Ensure some progress
-    }
-
-    return saturate(penumbra);
-}
-
-
-float rand(float2 co, float seed) {
-    return frac(sin(dot(co.xy, float2(12.9898, 78.233)) + seed) * 43758.5453);
-}
-
-float2 rand2(float2 co, float seed) {
-    float r1 = rand(co, seed);
-    float r2 = rand(co + float2(0.17, 0.83), seed + 10.0);
-    return float2(r1, r2);
-}
 
 float4 fragment_render_fractal(vertex_output IN) : SV_Target
 {
@@ -78,40 +34,28 @@ float4 fragment_render_fractal(vertex_output IN) : SV_Target
     float3 offset_hit_point = hit_point + normal_hit * surface_offset_epsilon;
 
     // Iluminación
-    float3 light_dir    = normalize(light_direction * 1); // Luz direccional
-    float3 light_color  = float3(1.0, 0.9, 0.8); // Color de la luz
-    float shininess = 128.0; // Brillo especular
+    float3 light_dir    = normalize(light_direction * 1);   // Luz direccional
+    float3 light_color  = float3(1.0, 0.9, 0.8);            // Color de la luz
 
     // Lambertiano
     float lambert_term = saturate(dot(normal_hit, light_dir));
     
-    // Especular (Blinn-Phong)
-    float3 view_dir = normalize(ray_origin - hit_point); // Desde el punto de impacto hacia la cámara
-    float3 halfway_dir = normalize(light_dir + view_dir);
-    float spec_angle = saturate(dot(normal_hit, halfway_dir));
-    float specular_term = pow(spec_angle, shininess);
-    specular_term = 0;
-
     float ao_term = ambient_occlusion(hit_distance.ray_steps);
-    //ao_term = 1;
     
-    float shadow_term = soft_shadow(offset_hit_point, light_dir, 256.0 /* suavidad */);
-    //float shadow_term = 1.0; // Sin sombras por ahora para simplificar
+    float shadow_term = shadow(offset_hit_point, light_dir);
 
     // Color final
     float3 albedo = base_color.rgb;
     
     float3 diffuse_contrib = albedo * lambert_term;
-    float3 specular_contrib = light_color * specular_term; // El color de la luz afecta al especular
     
     float3 ambient_light_color = float3(0.1, 0.1, 0.15); // Un azul oscuro o gris claro
     float3 final_color = albedo * ambient_light_color; // Base ambiental
-    final_color += (diffuse_contrib + specular_contrib) * light_color * shadow_term; // Luz directa + especular
+    final_color += diffuse_contrib * light_color * shadow_term;
     final_color *= ao_term;
     
     // Niebla simple
     float fog_factor = exp(-hit_distance.ray_march_distance * 0.1);
-    //fog_factor = 1;
     final_color = lerp(float3(0.3, 0.3, 0.3) /* color de la niebla */, final_color, fog_factor);
 
     return float4(final_color, 1.0);

@@ -124,13 +124,13 @@ Material:
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
-    - bailout: 8.6
+    - bailout: 7.18
     - cell_size: 4.43
-    - iterations: 50
-    - max_ray_distance: 172.44
-    - max_steps: 1312.6
+    - iterations: 20.5
+    - max_ray_distance: 1120.49
+    - max_steps: 2000
     - normal_delta: 0.0001
-    - power: 60.2
+    - power: 11.3
     - sphere_radius: 1.4
     - surface_epsilon: 0.0001
     m_Colors:
@@ -144,11 +144,11 @@ Material:
     - _LightDir: {r: 1, g: 1, b: -1, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - base_color: {r: 0.19999996, g: 0.6, b: 1, a: 1}
-    - cam_forward: {r: -0.045530017, g: 0.49242106, b: -0.8691654, a: 0}
-    - cam_pos: {r: -0.36710805, g: -1.0646628, b: 1.2157625, a: 0}
-    - cam_right: {r: -0.9986308, g: 0, b: 0.05231188, a: 0}
-    - cam_up: {r: 0.02575947, g: 0.87035716, b: 0.4917468, a: 0}
-    - light_direction: {r: -12.7, g: -8.75, b: 25.83, a: 1}
+    - cam_forward: {r: 0.49908212, g: -0.756996, b: -0.42175114, a: 0}
+    - cam_pos: {r: -0.8939409, g: -0.3344671, b: 0.5846945, a: 0}
+    - cam_right: {r: -0.6454523, g: 0, b: -0.7638005, a: 0}
+    - cam_up: {r: 0.5781941, g: 0.65341944, b: -0.48860484, a: 0}
+    - light_direction: {r: 0.01, g: -0.89, b: 0.62, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &4785929847013466859
