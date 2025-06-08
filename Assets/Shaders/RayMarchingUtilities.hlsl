@@ -13,7 +13,7 @@
 // ------------------------------------------------------------
 fractal_output perform_ray_marching(float3 ray_origin, float3 ray_dir)
 {
-    fractal_output result = {0, 1e5, 1e5};
+    fractal_output result = {0, 1e5, 1e5, 1e20};
     float distance_traveled = 0.0;
     int ray_steps = 0;
 
@@ -27,6 +27,7 @@ fractal_output perform_ray_marching(float3 ray_origin, float3 ray_dir)
         {
             result.ray_steps = ray_steps;
             result.ray_march_distance = distance_traveled;
+            result.orbit_min_dist = distance_to_surface.orbit_min_dist;
             return result;
         }
 
