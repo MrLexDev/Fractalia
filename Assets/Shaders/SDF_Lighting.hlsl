@@ -61,40 +61,60 @@ float shadow(float3 ro, float3 rd)
     return 1.0;
 }
 
+float3 compute_hit_point(float3 ray_origin, float3 ray_dir, float distance)
+{
+    return ray_origin + ray_dir * distance;
+}
+
+float3 offset_surface_point(float3 hit_point, float3 normal_hit)
+{
+    float surface_offset_epsilon = surface_epsilon * 2.0;
+    return hit_point + normal_hit * surface_offset_epsilon;
+}
+
+float lambert_lighting(float3 normal_hit, float3 light_dir)
+{
+    return saturate(dot(normal_hit, light_dir));
+}
+
+float3 ambient_light(float3 albedo)
+{
+    float3 ambient_light_color = float3(0.1, 0.1, 0.15);
+    return albedo * ambient_light_color;
+}
+
+float3 lighting_color(float3 albedo, float lambert_term, float ao_term, float shadow_term, float3 light_color)
+{
+    float3 diffuse_contrib = albedo * lambert_term;
+    float3 final_color = ambient_light(albedo);
+    final_color += diffuse_contrib * light_color * shadow_term;
+    final_color *= ao_term;
+    return final_color;
+}
+
+float3 apply_fog(float3 color, float distance)
+{
+    float fog_factor = exp(-distance * 0.1);
+    return lerp(float3(0.3, 0.3, 0.3), color, fog_factor);
+}
+
 
 float4 light_effects(float3 ray_origin, float3 ray_dir, fractal_output hit)
 {
-    float3 hit_point  = ray_origin + ray_dir * hit.ray_march_distance;
-    
+    float3 hit_point  = compute_hit_point(ray_origin, ray_dir, hit.ray_march_distance);
     float3 normal_hit = estimate_normal_from_fractal_sdf(hit_point);
+    float3 offset_hit_point = offset_surface_point(hit_point, normal_hit);
 
-    // Pequeño offset para evitar self-shadowing/acne
-    float surface_offset_epsilon = surface_epsilon * 2.0; // O un valor fijo pequeño
-    float3 offset_hit_point = hit_point + normal_hit * surface_offset_epsilon;
+    float3 light_dir   = normalize(light_direction);
+    float3 light_color = float3(1.0, 0.9, 0.8);
 
-    // Iluminación
-    float3 light_dir    = normalize(light_direction * 1);   // Luz direccional
-    float3 light_color  = float3(1.0, 0.9, 0.8);            // Color de la luz
+    float lambert_term = lambert_lighting(normal_hit, light_dir);
+    float ao_term      = ambient_occlusion(hit.ray_steps);
+    float shadow_term  = shadow(offset_hit_point, light_dir);
 
-    // Lambertiano
-    float lambert_term = saturate(dot(normal_hit, light_dir));
-    
-    float ao_term = ambient_occlusion(hit.ray_steps);
-    
-    float shadow_term = shadow(offset_hit_point, light_dir);
-
-    // Color final
     float3 albedo = base_color.rgb;
-    
-    float3 diffuse_contrib = albedo * lambert_term;
-    
-    float3 ambient_light_color = float3(0.1, 0.1, 0.15); // Un azul oscuro o gris claro
-    float3 final_color = albedo * ambient_light_color; // Base ambiental
-    final_color += diffuse_contrib * light_color * shadow_term;
-    final_color *= ao_term;
-    
-    // Niebla simple
-    float fog_factor = exp(-hit.ray_march_distance * 0.1);
-    final_color = lerp(float3(0.3, 0.3, 0.3) /* color de la niebla */, final_color, fog_factor);
+
+    float3 final_color = lighting_color(albedo, lambert_term, ao_term, shadow_term, light_color);
+    final_color = apply_fog(final_color, hit.ray_march_distance);
     return float4(final_color, 1.0);
 }
