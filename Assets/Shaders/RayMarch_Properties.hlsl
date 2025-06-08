@@ -37,6 +37,11 @@ CBUFFER_START(RaymarchProps)
         float3 orbit_color_3;
         float3 orbit_thresholds; // x,y,z thresholds
         float  orbit_scale;
+
+        // Background parameters
+        float2 moon_pos;
+        float  moon_radius;
+        float3 moon_color;
     CBUFFER_END
 
 #endif // RAYMARCH_PROPS_INCLUDED
