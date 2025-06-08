@@ -29,6 +29,14 @@ CBUFFER_START(RaymarchProps)
 
         // Light
         float3 light_direction;
+
+        // Orbit trap coloring
+        float3 orbit_color_0;
+        float3 orbit_color_1;
+        float3 orbit_color_2;
+        float3 orbit_color_3;
+        float3 orbit_thresholds; // x,y,z thresholds
+        float  orbit_scale;
     CBUFFER_END
 
 #endif // RAYMARCH_PROPS_INCLUDED

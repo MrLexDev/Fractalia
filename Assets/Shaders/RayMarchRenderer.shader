@@ -23,6 +23,13 @@ Shader "Custom/RayMarchRenderer"
         power               ("Power",               Float)  = 4.0
         
         light_direction     ("Light Direction",     Vector) = (0, 0, 0)
+
+        orbit_color_0       ("Orbit Color 0",       Color)  = (0.2, 0.2, 0.8, 1)
+        orbit_color_1       ("Orbit Color 1",       Color)  = (0.2, 0.8, 0.2, 1)
+        orbit_color_2       ("Orbit Color 2",       Color)  = (0.8, 0.8, 0.2, 1)
+        orbit_color_3       ("Orbit Color 3",       Color)  = (0.8, 0.2, 0.2, 1)
+        orbit_thresholds    ("Orbit Thresholds",    Vector) = (0.3, 0.6, 0.9, 0)
+        orbit_scale         ("Orbit Scale",         Float)  = 1.0
     }
 
     SubShader

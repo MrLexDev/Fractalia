@@ -112,7 +112,30 @@ float4 light_effects(float3 ray_origin, float3 ray_dir, fractal_output hit)
     float ao_term      = ambient_occlusion(hit.ray_steps);
     float shadow_term  = shadow(offset_hit_point, light_dir);
 
-    float3 albedo = base_color.rgb;
+    float orbit_value = hit.orbit_min_dist * orbit_scale;
+    float3 orbit_color;
+
+    if (orbit_value < orbit_thresholds.x)
+    {
+        float t = saturate(orbit_value / max(orbit_thresholds.x, 1e-5));
+        orbit_color = lerp(orbit_color_0, orbit_color_1, t);
+    }
+    else if (orbit_value < orbit_thresholds.y)
+    {
+        float t = saturate((orbit_value - orbit_thresholds.x) / max(orbit_thresholds.y - orbit_thresholds.x, 1e-5));
+        orbit_color = lerp(orbit_color_1, orbit_color_2, t);
+    }
+    else if (orbit_value < orbit_thresholds.z)
+    {
+        float t = saturate((orbit_value - orbit_thresholds.y) / max(orbit_thresholds.z - orbit_thresholds.y, 1e-5));
+        orbit_color = lerp(orbit_color_2, orbit_color_3, t);
+    }
+    else
+    {
+        orbit_color = orbit_color_3;
+    }
+
+    float3 albedo = orbit_color;
 
     float3 final_color = lighting_color(albedo, lambert_term, ao_term, shadow_term, light_color);
     final_color = apply_fog(final_color, hit.ray_march_distance);

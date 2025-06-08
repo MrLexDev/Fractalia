@@ -6,6 +6,7 @@ struct fractal_output {
     float sdf_distance;
     int ray_steps;
     float ray_march_distance;
+    float orbit_min_dist;
 };
 
 // ------------------------------------------------------------
@@ -13,15 +14,17 @@ struct fractal_output {
 // ------------------------------------------------------------
 fractal_output sdf_mandelbulb(float3 position)
 {
-    fractal_output result = {0.0, 0.0, 0.0};
+    fractal_output result = {0.0, 0.0, 0.0, 1e20};
     float3 z = position;
     float radius_derivative = 1.0;
     float radius = 0;
+    float orbit_min = 1e20;
 
     for (int i = 0; i < iterations; ++i)
     {
         radius = length(z);
-        if (radius > bailout) 
+        orbit_min = min(orbit_min, radius);
+        if (radius > bailout)
             break;
 
         // Convertir a coordenadas esféricas evitando divisiones por cero
@@ -51,6 +54,7 @@ fractal_output sdf_mandelbulb(float3 position)
     }
 
     result.sdf_distance = 0.5 * log(radius) * radius / radius_derivative;
+    result.orbit_min_dist = orbit_min;
     return result;
 }
 
@@ -59,10 +63,11 @@ fractal_output sdf_mandelbulb(float3 position)
 // -----------------------------------------------------------------------
 fractal_output sdf_mandelbox(float3 position)
 {
-    fractal_output result = {0.0, 0.0, 0.0};
+    fractal_output result = {0.0, 0.0, 0.0, 1e20};
     // Inicializamos z = p y derivada dr = 1
     float3 z = position;
     float dr = 1.0;
+    float orbit_min = 1e20;
 
     for (int i = 0; i < iterations; i++)
     {
@@ -78,6 +83,7 @@ fractal_output sdf_mandelbox(float3 position)
         // 2) Sphere-fold (fold esférico)
         // -----------------------
         float r2 = dot(z, z);
+        orbit_min = min(orbit_min, sqrt(r2));
         if (r2 < MB_MIN_RADIUS * MB_MIN_RADIUS)
         {
             // Si estamos dentro del círculo de radio mínimo, escalamos hasta MB_FIXED_RADIUS
@@ -104,6 +110,7 @@ fractal_output sdf_mandelbox(float3 position)
 
     // Finalmente, devolvemos la distancia aproximada: |z| / |dr|
     result.sdf_distance = length(z) / abs(dr);
+    result.orbit_min_dist = orbit_min;
     return result;
 }
 
@@ -122,8 +129,9 @@ static const float SIERPINSKI_STRUT_THICKNESS = 1.2; // Ajusta el "grosor" de la
 
 fractal_output sdf_sierpinski(float3 p)
 {
-    fractal_output result = {0.0, 0.0, 0.0};
+    fractal_output result = {0.0, 0.0, 0.0, 1e20};
     float accumulated_total_scale = 1.0;
+    float orbit_min = 1e20;
 
     for (int i = 0; i < SIERPINSKI_ITERATIONS; ++i)
     {
@@ -136,9 +144,11 @@ fractal_output sdf_sierpinski(float3 p)
         
         p = p * SIERPINSKI_SCALE - SIERPINSKI_OFFSET_VEC * (SIERPINSKI_SCALE - 1.0);
         
+        orbit_min = min(orbit_min, length(p));
         accumulated_total_scale *= SIERPINSKI_SCALE;
     }
     result.sdf_distance = (length(p) - SIERPINSKI_STRUT_THICKNESS) / accumulated_total_scale;
+    result.orbit_min_dist = orbit_min;
     return result;
 }
 
