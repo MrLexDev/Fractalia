@@ -30,10 +30,6 @@ Shader "Custom/RayMarchRenderer"
         orbit_color_3       ("Orbit Color 3",       Color)  = (0.8, 0.2, 0.2, 1)
         orbit_thresholds    ("Orbit Thresholds",    Vector) = (0.3, 0.6, 0.9, 0)
         orbit_scale         ("Orbit Scale",         Float)  = 1.0
-
-        moon_pos            ("Moon Position",       Vector) = (0.75, 0.75, 0, 0)
-        moon_radius         ("Moon Radius",         Float)  = 0.08
-        moon_color          ("Moon Color",          Color)  = (1, 1, 0.9, 1)
     }
 
     SubShader
