@@ -8,6 +8,7 @@ CBUFFER_START(RaymarchProps)
         float4  cam_forward;
         float4  cam_right;
         float4  cam_up;
+        float   cam_fov;
 
         // Parámetros de la “esfera”
         float4  base_color;

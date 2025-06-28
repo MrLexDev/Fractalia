@@ -6,6 +6,7 @@ Shader "Custom/RayMarchRenderer"
         cam_forward         ("Camera Forward",      Vector) = (0,0,1,0)
         cam_right           ("Camera Right",        Vector) = (1,0,0,0)
         cam_up              ("Camera Up",           Vector) = (0,1,0,0)
+        cam_fov             ("Camera FOV",          Float)  = 60
 
         base_color          ("Sphere Base Color",   Color)  = (0.2, 0.6, 1.0, 1.0)
         max_ray_distance    ("Max Ray Distance",    Float)  = 100.0

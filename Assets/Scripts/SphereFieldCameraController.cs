@@ -7,6 +7,7 @@ public class SphereFieldCameraController : MonoBehaviour
     private static readonly int CamForward = Shader.PropertyToID("cam_forward");
     private static readonly int CamRight = Shader.PropertyToID("cam_right");
     private static readonly int CamUp = Shader.PropertyToID("cam_up");
+    private static readonly int CamFov = Shader.PropertyToID("cam_fov");
 
     [Header("References")]
     public Camera mainCamera;
@@ -109,5 +110,9 @@ public class SphereFieldCameraController : MonoBehaviour
         // 4) Vector “up” en world space
         Vector3 up = -mainCamera.transform.up.normalized;
         rayMarchMaterial.SetVector(CamUp, new Vector4(up.x, up.y, up.z, 0));
+
+        // 5) Field of view
+        float fov = mainCamera.fieldOfView;
+        rayMarchMaterial.SetFloat(CamFov, fov);
     }
 }

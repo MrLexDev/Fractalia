@@ -13,8 +13,10 @@ float4 fragment_render_fractal(vertex_output IN) : SV_Target
     float2 uv01 = IN.uv;
     float2 screen_pos = uv01 * 2.0 - 1.0;
 
-	float  aspect = _ScreenParams.x / _ScreenParams.y;
-	screen_pos.x *= aspect;
+        float  aspect = _ScreenParams.x / _ScreenParams.y;
+        float  fov_scale = tan(radians(cam_fov) * 0.5);
+        screen_pos.x *= aspect;
+        screen_pos *= fov_scale;
 
     float3 ray_origin = cam_pos.xyz;
     float3 ray_dir    = normalize(
