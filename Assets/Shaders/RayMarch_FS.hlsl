@@ -5,12 +5,16 @@
 #include "FullScreenTriangle_VS.hlsl"
 #include "RayMarch_Properties.hlsl"
 #include "SDF_Lighting.hlsl"
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
 
 float4 fragment_render_fractal(vertex_output IN) : SV_Target
 {
     float2 uv01 = IN.uv;
     float2 screen_pos = uv01 * 2.0 - 1.0;
+
+	float  aspect = _ScreenParams.x / _ScreenParams.y;
+	screen_pos.x *= aspect;
 
     float3 ray_origin = cam_pos.xyz;
     float3 ray_dir    = normalize(
@@ -22,7 +26,7 @@ float4 fragment_render_fractal(vertex_output IN) : SV_Target
     
     if (hit.ray_march_distance >= max_ray_distance)
     {
-        return float4(0, 0, 0, 1);
+        return float4(0, 0, 0, 0);
     }
     
     float4 final_color = light_effects(ray_origin, ray_dir, hit);

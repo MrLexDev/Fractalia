@@ -26,6 +26,7 @@ CBUFFER_START(RaymarchProps)
         // Parámetros del fractal
         int    iterations;
         float  power;
+        float  g_Scale;
 
         // Light
         float3 light_direction;

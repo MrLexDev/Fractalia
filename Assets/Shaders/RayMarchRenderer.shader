@@ -21,6 +21,7 @@ Shader "Custom/RayMarchRenderer"
         
         iterations          ("Iterations",          Int)    = 10
         power               ("Power",               Float)  = 4.0
+        g_Scale             ("Scale",               Float)  = 1.0
         
         light_direction     ("Light Direction",     Vector) = (0, 0, 0)
 
@@ -34,11 +35,14 @@ Shader "Custom/RayMarchRenderer"
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
+        //Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
+        Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" }
         LOD 100
 
         Pass
         {
+            Blend SrcAlpha OneMinusSrcAlpha
+            ZWrite Off
             Name "InfiniteSphereFieldPass"
             Tags { "LightMode"="UniversalForward" } // O el LightMode apropiado
 

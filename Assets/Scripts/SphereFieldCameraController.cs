@@ -29,7 +29,7 @@ public class SphereFieldCameraController : MonoBehaviour
 
         Vector3 angles = mainCamera!.transform.eulerAngles;
         _yaw = angles.y;
-        _pitch = -angles.x;
+        _pitch = angles.x;
         
 
         Cursor.lockState = CursorLockMode.Locked;
@@ -80,7 +80,7 @@ public class SphereFieldCameraController : MonoBehaviour
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
         _yaw += mouseX;
-        _pitch += mouseY;
+        _pitch -= mouseY;
         _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
 
         // Aplicar rotación
@@ -107,7 +107,7 @@ public class SphereFieldCameraController : MonoBehaviour
         rayMarchMaterial.SetVector(CamRight, new Vector4(right.x, right.y, right.z, 0));
 
         // 4) Vector “up” en world space
-        Vector3 up = mainCamera.transform.up.normalized;
+        Vector3 up = -mainCamera.transform.up.normalized;
         rayMarchMaterial.SetVector(CamUp, new Vector4(up.x, up.y, up.z, 0));
     }
 }
