@@ -85,7 +85,7 @@ Material:
     - MB_BOX_LIMIT: 0.25
     - MB_FIXED_RADIUS: 1
     - MB_MIN_RADIUS: 0.5
-    - MB_SCALE: 1.1
+    - MB_SCALE: 4.26
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
@@ -124,12 +124,15 @@ Material:
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
-    - bailout: 4.4
+    - ao_brightness: 0.3
+    - bailout: 2
+    - cam_fov: 102.3
     - cell_size: 4.43
-    - g_Scale: 1
-    - iterations: 10
-    - max_ray_distance: 10000
-    - max_steps: 2000
+    - debug_steps: 0
+    - g_Scale: 0.6
+    - iterations: 20
+    - max_ray_distance: 50
+    - max_steps: 200
     - moon_radius: 0.08
     - normal_delta: 0.0001
     - orbit_scale: 1
@@ -148,17 +151,17 @@ Material:
     - _LightDir: {r: 1, g: 1, b: -1, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - base_color: {r: 0.19999996, g: 0.6, b: 1, a: 1}
-    - cam_forward: {r: -0.71669084, g: 0.6414492, b: 0.27367347, a: 0}
-    - cam_pos: {r: 0.5570107, g: 1.0071263, b: 0.638738, a: 0}
-    - cam_right: {r: 0.35673326, g: 0, b: 0.9342063, a: 0}
-    - cam_up: {r: -0.5992459, g: -0.76716554, b: 0.22882624, a: 0}
+    - cam_forward: {r: 0.5879088, g: -0.34037948, b: 0.7338291, a: 0}
+    - cam_pos: {r: -1.4857934, g: 0.6011212, b: -1.7130307, a: 0}
+    - cam_right: {r: 0.78042996, g: 0, b: -0.62524325, a: 0}
+    - cam_up: {r: -0.21281992, g: -0.9402882, b: -0.26564234, a: 0}
     - light_direction: {r: -3.08, g: -90, b: -67.91, a: 1}
     - moon_color: {r: 0.0754717, g: 0.0754717, b: 0.0754717, a: 1}
     - moon_pos: {r: 0.86, g: 0.21, b: 0, a: 0}
-    - orbit_color_0: {r: 0.19999996, g: 0.19999996, b: 0.8, a: 1}
-    - orbit_color_1: {r: 0.19999996, g: 0.8, b: 0.19999996, a: 1}
-    - orbit_color_2: {r: 0.8, g: 0.8, b: 0.19999996, a: 1}
-    - orbit_color_3: {r: 0.8, g: 0.19999996, b: 0.19999996, a: 1}
+    - orbit_color_0: {r: 0.8483891, g: 0.8483891, b: 0.8773585, a: 1}
+    - orbit_color_1: {r: 0.6594874, g: 0.6869611, b: 0.7169812, a: 1}
+    - orbit_color_2: {r: 0.45113918, g: 0.602151, b: 0.6981132, a: 1}
+    - orbit_color_3: {r: 0.21084018, g: 0.2411745, b: 0.4339623, a: 1}
     - orbit_thresholds: {r: 0.3, g: 0.6, b: 0.9, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -38,6 +38,7 @@ fractal_output perform_ray_marching(float3 ray_origin, float3 ray_dir)
 
         distance_traveled += distance_to_surface.sdf_distance;
     }
-
+    result.ray_steps = ray_steps;
+    //result.ray_march_distance = distance_traveled;
     return result; // Indicador de “sin colisión válida”
 }

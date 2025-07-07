@@ -26,6 +26,10 @@ float4 fragment_render_fractal(vertex_output IN) : SV_Target
     
     fractal_output hit = perform_ray_marching(ray_origin, ray_dir);
     
+    if (debug_steps != 0)
+    {
+        return float4(hit.ray_steps / (float)max_steps, 0, 0, 1);
+    }
     if (hit.ray_march_distance >= max_ray_distance)
     {
         return float4(0, 0, 0, 0);

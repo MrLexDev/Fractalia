@@ -17,6 +17,7 @@ CBUFFER_START(RaymarchProps)
         int     max_steps;
         float   normal_delta;
         int     bailout;
+        float   ao_brightness;
 
         // mandlebox
         float MB_SCALE       = 2.0;     // Factor de escalado (típicamente entre 2.0 y 3.0)
@@ -39,6 +40,7 @@ CBUFFER_START(RaymarchProps)
         float3 orbit_color_3;
         float3 orbit_thresholds; // x,y,z thresholds
         float  orbit_scale;
+        int    debug_steps;
     CBUFFER_END
 
 #endif // RAYMARCH_PROPS_INCLUDED

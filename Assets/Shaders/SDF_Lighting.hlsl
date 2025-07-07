@@ -32,7 +32,7 @@ float3 estimate_normal_from_fractal_sdf(float3 p)
 
 float ambient_occlusion(int march_steps)
 {
-        return 0.1 / ((float)march_steps / (float)max_steps);
+    return ao_brightness / ((float)march_steps / (float)max_steps);
 }
 
 #define SHADOW_MAX_STEPS 64       // Número máximo de pasos para el rayo de sombra
@@ -138,6 +138,6 @@ float4 light_effects(float3 ray_origin, float3 ray_dir, fractal_output hit)
     float3 albedo = orbit_color;
 
     float3 final_color = lighting_color(albedo, lambert_term, ao_term, shadow_term, light_color);
-    final_color = apply_fog(final_color, hit.ray_march_distance);
+    //final_color = apply_fog(final_color, hit.ray_march_distance);
     return float4(final_color, 1.0);
 }

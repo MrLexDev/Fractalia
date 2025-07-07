@@ -14,6 +14,7 @@ Shader "Custom/RayMarchRenderer"
         max_steps           ("Max Steps",           Int)    = 64
         normal_delta        ("Normal Delta",        Float)  = 0.0005
         bailout             ("Bailout",             Int)    = 4
+        ao_brightness       ("AO Brightness",       Float)  = 0.1
         
         MB_SCALE            ("MB_SCALE",            Float)    = 2
         MB_MIN_RADIUS       ("MB_MIN_RADIUS",       Float)    = 0.5
@@ -32,6 +33,8 @@ Shader "Custom/RayMarchRenderer"
         orbit_color_3       ("Orbit Color 3",       Color)  = (0.8, 0.2, 0.2, 1)
         orbit_thresholds    ("Orbit Thresholds",    Vector) = (0.3, 0.6, 0.9, 0)
         orbit_scale         ("Orbit Scale",         Float)  = 1.0
+        
+        debug_steps         ("Debug Ray Steps",     Float)  = 0.0
     }
 
     SubShader
