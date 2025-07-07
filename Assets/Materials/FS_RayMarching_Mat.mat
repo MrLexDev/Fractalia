@@ -135,11 +135,15 @@ Material:
     - max_steps: 200
     - moon_radius: 0.08
     - normal_delta: 0.0001
+    - normal_delta_far: 0.003
     - orbit_scale: 1
     - param_hue: 0.1
     - power: 10
     - sphere_radius: 1.4
     - surface_epsilon: 0.0001
+    - surface_epsilon_far: 0.005
+    - lod_near_distance: 2
+    - lod_far_distance: 25
     m_Colors:
     - _BaseColor: {r: 1, g: 0, b: 0, a: 1}
     - _CamForward: {r: 0, g: 0, b: 1, a: 0}

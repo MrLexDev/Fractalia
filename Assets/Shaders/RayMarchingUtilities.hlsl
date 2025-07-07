@@ -23,7 +23,8 @@ fractal_output perform_ray_marching(float3 ray_origin, float3 ray_dir)
         float3 sample_point  = ray_origin + ray_dir * distance_traveled;
         fractal_output distance_to_surface = fractal_signed_distance(sample_point);
 
-        if (distance_to_surface.sdf_distance < surface_epsilon)
+        float current_epsilon = lod_surface_epsilon(distance_traveled);
+        if (distance_to_surface.sdf_distance < current_epsilon)
         {
             result.ray_steps = ray_steps;
             result.ray_march_distance = distance_traveled;

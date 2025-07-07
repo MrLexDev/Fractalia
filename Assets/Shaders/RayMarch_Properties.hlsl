@@ -16,6 +16,10 @@ CBUFFER_START(RaymarchProps)
         float   surface_epsilon;
         int     max_steps;
         float   normal_delta;
+        float   surface_epsilon_far;
+        float   normal_delta_far;
+        float   lod_near_distance;
+        float   lod_far_distance;
         int     bailout;
         float   ao_brightness;
 
@@ -42,5 +46,21 @@ CBUFFER_START(RaymarchProps)
         float  orbit_scale;
         int    debug_steps;
     CBUFFER_END
+
+    float compute_lod_factor(float distance)
+    {
+        float denom = max(lod_far_distance - lod_near_distance, 1e-5);
+        return saturate((distance - lod_near_distance) / denom);
+    }
+
+    float lod_surface_epsilon(float distance)
+    {
+        return lerp(surface_epsilon, surface_epsilon_far, compute_lod_factor(distance));
+    }
+
+    float lod_normal_delta(float distance)
+    {
+        return lerp(normal_delta, normal_delta_far, compute_lod_factor(distance));
+    }
 
 #endif // RAYMARCH_PROPS_INCLUDED

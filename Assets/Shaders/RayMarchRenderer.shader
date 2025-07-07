@@ -13,6 +13,10 @@ Shader "Custom/RayMarchRenderer"
         surface_epsilon     ("Surface Epsilon",     Float)  = 0.001
         max_steps           ("Max Steps",           Int)    = 64
         normal_delta        ("Normal Delta",        Float)  = 0.0005
+        surface_epsilon_far ("Surface Epsilon Far", Float)  = 0.005
+        normal_delta_far    ("Normal Delta Far",    Float)  = 0.003
+        lod_near_distance   ("LOD Near Distance",   Float)  = 2
+        lod_far_distance    ("LOD Far Distance",    Float)  = 25
         bailout             ("Bailout",             Int)    = 4
         ao_brightness       ("AO Brightness",       Float)  = 0.1
         
