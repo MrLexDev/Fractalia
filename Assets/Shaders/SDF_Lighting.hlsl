@@ -1,31 +1,32 @@
+
 #include "SDF_Fractals.hlsl"
 
-float smooth_sdf(float3 p)
+float smooth_sdf(float3 p, float delta)
 {
     fractal_output center = fractal_signed_distance(p);
 
-    fractal_output dx1 = fractal_signed_distance(p + float3(normal_delta, 0, 0));
-    fractal_output dx2 = fractal_signed_distance(p - float3(normal_delta, 0, 0));
+    fractal_output dx1 = fractal_signed_distance(p + float3(delta, 0, 0));
+    fractal_output dx2 = fractal_signed_distance(p - float3(delta, 0, 0));
 
-    fractal_output dy1 = fractal_signed_distance(p + float3(0, normal_delta, 0));
-    fractal_output dy2 = fractal_signed_distance(p - float3(0, normal_delta, 0));
+    fractal_output dy1 = fractal_signed_distance(p + float3(0, delta, 0));
+    fractal_output dy2 = fractal_signed_distance(p - float3(0, delta, 0));
 
-    fractal_output dz1 = fractal_signed_distance(p + float3(0, 0, normal_delta));
-    fractal_output dz2 = fractal_signed_distance(p - float3(0, 0, normal_delta));
+    fractal_output dz1 = fractal_signed_distance(p + float3(0, 0, delta));
+    fractal_output dz2 = fractal_signed_distance(p - float3(0, 0, delta));
 
     float sum = center.sdf_distance + dx1.sdf_distance + dx2.sdf_distance + dy1.sdf_distance + dy2.sdf_distance + dz1.sdf_distance + dz2.sdf_distance;
     return sum / 7.0;
 }
 
-float3 estimate_normal_from_fractal_sdf(float3 p)
+float3 estimate_normal_from_fractal_sdf(float3 p, float delta)
 {
-    float3 dx = float3(normal_delta, 0.0,          0.0);
-    float3 dy = float3(0.0,          normal_delta, 0.0);
-    float3 dz = float3(0.0,          0.0,          normal_delta);
+    float3 dx = float3(delta, 0.0,          0.0);
+    float3 dy = float3(0.0,          delta, 0.0);
+    float3 dz = float3(0.0,          0.0,          delta);
 
-    float nx = smooth_sdf(p + dx) - smooth_sdf(p - dx);
-    float ny = smooth_sdf(p + dy) - smooth_sdf(p - dy);
-    float nz = smooth_sdf(p + dz) - smooth_sdf(p - dz);
+    float nx = smooth_sdf(p + dx, delta) - smooth_sdf(p - dx, delta);
+    float ny = smooth_sdf(p + dy, delta) - smooth_sdf(p - dy, delta);
+    float nz = smooth_sdf(p + dz, delta) - smooth_sdf(p - dz, delta);
 
     return normalize(float3(nx, ny, nz));
 }
@@ -66,9 +67,9 @@ float3 compute_hit_point(float3 ray_origin, float3 ray_dir, float distance)
     return ray_origin + ray_dir * distance;
 }
 
-float3 offset_surface_point(float3 hit_point, float3 normal_hit)
+float3 offset_surface_point(float3 hit_point, float3 normal_hit, float epsilon)
 {
-    float surface_offset_epsilon = surface_epsilon * 2.0;
+    float surface_offset_epsilon = epsilon * 2.0;
     return hit_point + normal_hit * surface_offset_epsilon;
 }
 
@@ -102,8 +103,10 @@ float3 apply_fog(float3 color, float distance)
 float4 light_effects(float3 ray_origin, float3 ray_dir, fractal_output hit)
 {
     float3 hit_point  = compute_hit_point(ray_origin, ray_dir, hit.ray_march_distance);
-    float3 normal_hit = estimate_normal_from_fractal_sdf(hit_point);
-    float3 offset_hit_point = offset_surface_point(hit_point, normal_hit);
+    float delta = lod_normal_delta(hit.ray_march_distance);
+    float epsilon = lod_surface_epsilon(hit.ray_march_distance);
+    float3 normal_hit = estimate_normal_from_fractal_sdf(hit_point, delta);
+    float3 offset_hit_point = offset_surface_point(hit_point, normal_hit, epsilon);
 
     float3 light_dir   = normalize(light_direction);
     float3 light_color = float3(1.0, 0.9, 0.8);
