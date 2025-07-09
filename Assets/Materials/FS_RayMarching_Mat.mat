@@ -130,6 +130,7 @@ Material:
     - cell_size: 4.43
     - debug_steps: 0
     - g_Scale: 0.6
+    - fractal_offset: {r: 0, g: 0, b: 0, a: 0}
     - iterations: 20
     - max_ray_distance: 50
     - max_steps: 200

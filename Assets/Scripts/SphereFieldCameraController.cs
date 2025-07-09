@@ -8,6 +8,8 @@ public class SphereFieldCameraController : MonoBehaviour
     private static readonly int CamRight = Shader.PropertyToID("cam_right");
     private static readonly int CamUp = Shader.PropertyToID("cam_up");
     private static readonly int CamFov = Shader.PropertyToID("cam_fov");
+    private static readonly int FractalOffset = Shader.PropertyToID("fractal_offset");
+    private static readonly int FractalScale = Shader.PropertyToID("g_Scale");
 
     [Header("References")]
     public Camera mainCamera;
@@ -16,6 +18,10 @@ public class SphereFieldCameraController : MonoBehaviour
     [Header("Movement")]
     public float moveSpeed = 5f;
 
+    [Header("Dynamic scaling")]
+    public float scaleThreshold = 10f;
+    public float scaleStep = 2f;
+
     [Header("Mouse rotation")]
     public float mouseSensitivity = 2.0f;
     public float minPitch = -85f;  // límite de rotación vertical
@@ -23,6 +29,9 @@ public class SphereFieldCameraController : MonoBehaviour
 
     private float _yaw;   // rotación horizontal (Y)
     private float _pitch; // rotación vertical (X)
+    private Vector3 _fractalOffset;
+    private float _fractalScale;
+    private float _initialFractalScale;
 
     private void Start()
     {
@@ -31,7 +40,17 @@ public class SphereFieldCameraController : MonoBehaviour
         Vector3 angles = mainCamera!.transform.eulerAngles;
         _yaw = angles.y;
         _pitch = angles.x;
-        
+
+        // Keep camera at the origin for better precision
+        mainCamera.transform.position = Vector3.zero;
+
+        if (rayMarchMaterial)
+        {
+            _fractalScale = rayMarchMaterial.GetFloat(FractalScale);
+            _initialFractalScale = _fractalScale;
+        }
+        _fractalOffset = Vector3.zero;
+
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -66,13 +85,32 @@ public class SphereFieldCameraController : MonoBehaviour
 
         Vector3 move = rightFlat * horizontal + forwardFlat * vertical;
 
-        mainCamera.transform.position += move.normalized * (moveSpeed * Time.deltaTime);
-
-        // 3) Subir/bajar con Q/E
+        Vector3 verticalMove = Vector3.zero;
         if (Input.GetKey(KeyCode.E))
-            mainCamera.transform.position += Vector3.up * (moveSpeed * Time.deltaTime);
+            verticalMove += Vector3.up;
         if (Input.GetKey(KeyCode.Q))
-            mainCamera.transform.position += Vector3.down * (moveSpeed * Time.deltaTime);
+            verticalMove += Vector3.down;
+
+        Vector3 delta = (move + verticalMove).normalized * (moveSpeed * Time.deltaTime);
+        _fractalOffset += delta;
+
+        ApplyDynamicScaling();
+    }
+
+    private void ApplyDynamicScaling()
+    {
+        if (!rayMarchMaterial) return;
+
+        if (_fractalOffset.magnitude > scaleThreshold)
+        {
+            _fractalOffset *= 0.5f;
+            _fractalScale *= scaleStep;
+        }
+        else if (_fractalOffset.magnitude < scaleThreshold * 0.25f && _fractalScale > _initialFractalScale)
+        {
+            _fractalOffset *= 2.0f;
+            _fractalScale /= scaleStep;
+        }
     }
 
     private void HandleMouseRotation()
@@ -98,6 +136,8 @@ public class SphereFieldCameraController : MonoBehaviour
         // 1) Posición de la cámara
         Vector3 camPos = mainCamera.transform.position;
         rayMarchMaterial.SetVector(CamPos, new Vector4(camPos.x, camPos.y, camPos.z, 0));
+        rayMarchMaterial.SetVector(FractalOffset, _fractalOffset);
+        rayMarchMaterial.SetFloat(FractalScale, _fractalScale);
 
         // 2) Vector “forward” en world space
         Vector3 forward = mainCamera.transform.forward.normalized;
