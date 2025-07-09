@@ -28,6 +28,7 @@ Shader "Custom/RayMarchRenderer"
         iterations          ("Iterations",          Int)    = 10
         power               ("Power",               Float)  = 4.0
         g_Scale             ("Scale",               Float)  = 1.0
+        fractal_offset      ("Fractal Offset",      Vector) = (0,0,0,0)
         
         light_direction     ("Light Direction",     Vector) = (0, 0, 0)
 
