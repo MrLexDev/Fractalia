@@ -169,9 +169,7 @@ fractal_output sdf_mandelbulb_scaled(float3 position)
 
 fractal_output fractal_signed_distance(float3 position)
 {
-    // Apply world offset so that the fractal moves opposite to the camera
-    float3 local_pos = position - fractal_offset;
-    return sdf_mandelbulb_scaled(local_pos);
+    return sdf_mandelbulb_scaled(position);
 }
 
 
