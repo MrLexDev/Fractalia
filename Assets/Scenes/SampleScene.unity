@@ -315,6 +315,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1349140067}
   - component: {fileID: 1349140066}
+  - component: {fileID: 1349140068}
   m_Layer: 0
   m_Name: SphereFieldCameraController
   m_TagString: Untagged
@@ -333,13 +334,28 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c8e45db6277cc4b4ca2cac665bb010c7, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   mainCamera: {fileID: 330585545}
   rayMarchMaterial: {fileID: 2100000, guid: aefaadb6d216b6543b5bb635164414ed, type: 2}
   moveSpeed: 0.2
   mouseSensitivity: 2
   minPitch: -85
   maxPitch: 85
+--- !u!114 &1349140068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1349140065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b6bb0745e6b4ff4a8562bdbdbe2e8c8, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  controller: {fileID: 1349140066}
+  rayMarchMaterial: {fileID: 2100000, guid: aefaadb6d216b6543b5bb635164414ed, type: 2}
+  showUI: 1
 --- !u!4 &1349140067
 Transform:
   m_ObjectHideFlags: 0
