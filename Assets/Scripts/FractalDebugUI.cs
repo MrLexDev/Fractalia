@@ -12,6 +12,10 @@ public class FractalDebugUI : MonoBehaviour
 
     public bool showUI = true;
 
+    public bool showCenterLine = true;
+
+    private LineRenderer _lineRenderer;
+
     private Vector3 _lightDirection;
     private int _maxSteps;
     private Color _baseColor;
@@ -30,6 +34,15 @@ public class FractalDebugUI : MonoBehaviour
             _maxSteps = rayMarchMaterial.GetInt(MaxStepsId);
             _baseColor = rayMarchMaterial.GetColor(BaseColorId);
         }
+        // create line renderer for center line
+        _lineRenderer = new GameObject("CenterDebugLine").AddComponent<LineRenderer>();
+        _lineRenderer.positionCount = 2;
+        _lineRenderer.startWidth = 0.05f;
+        _lineRenderer.endWidth = 0.05f;
+        _lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        _lineRenderer.startColor = Color.red;
+        _lineRenderer.endColor = Color.red;
+
     }
 
     private void Update()
@@ -38,10 +51,26 @@ public class FractalDebugUI : MonoBehaviour
         {
             showUI = !showUI;
         }
+        if (Input.GetKeyDown(KeyCode.F2))
+        {
+            bool isLocked = Cursor.lockState == CursorLockMode.Locked;
+            Cursor.lockState = isLocked ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = !isLocked;
+        }
+
+        if (Input.GetKeyDown(KeyCode.F3))
+        {
+            showCenterLine = !showCenterLine;
+        }
 
         if (controller && controller.mainCamera)
         {
-            Debug.DrawLine(controller.mainCamera.transform.position, Vector3.zero, Color.green);
+            _lineRenderer.enabled = showCenterLine;
+            if (showCenterLine)
+            {
+                _lineRenderer.SetPosition(0, controller.mainCamera.transform.position);
+                _lineRenderer.SetPosition(1, Vector3.zero);
+            }
         }
     }
 
