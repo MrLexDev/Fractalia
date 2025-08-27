@@ -11,9 +11,11 @@ public class FractalDebugUI : MonoBehaviour
     public Material rayMarchMaterial;
 
     public bool showUI = true;
+
     public bool showCenterLine = true;
 
     private LineRenderer _lineRenderer;
+
     private Vector3 _lightDirection;
     private int _maxSteps;
     private Color _baseColor;
@@ -32,7 +34,6 @@ public class FractalDebugUI : MonoBehaviour
             _maxSteps = rayMarchMaterial.GetInt(MaxStepsId);
             _baseColor = rayMarchMaterial.GetColor(BaseColorId);
         }
-
         // create line renderer for center line
         _lineRenderer = new GameObject("CenterDebugLine").AddComponent<LineRenderer>();
         _lineRenderer.positionCount = 2;
@@ -41,6 +42,7 @@ public class FractalDebugUI : MonoBehaviour
         _lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         _lineRenderer.startColor = Color.red;
         _lineRenderer.endColor = Color.red;
+
     }
 
     private void Update()
@@ -49,7 +51,6 @@ public class FractalDebugUI : MonoBehaviour
         {
             showUI = !showUI;
         }
-
         if (Input.GetKeyDown(KeyCode.F2))
         {
             bool isLocked = Cursor.lockState == CursorLockMode.Locked;
