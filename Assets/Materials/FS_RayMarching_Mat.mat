@@ -131,6 +131,8 @@ Material:
     - debug_steps: 0
     - g_Scale: 0.6
     - iterations: 20
+    - lod_far_distance: 25
+    - lod_near_distance: 2
     - max_ray_distance: 50
     - max_steps: 200
     - moon_radius: 0.08
@@ -142,8 +144,6 @@ Material:
     - sphere_radius: 1.4
     - surface_epsilon: 0.0001
     - surface_epsilon_far: 0.005
-    - lod_near_distance: 2
-    - lod_far_distance: 25
     m_Colors:
     - _BaseColor: {r: 1, g: 0, b: 0, a: 1}
     - _CamForward: {r: 0, g: 0, b: 1, a: 0}
@@ -155,10 +155,10 @@ Material:
     - _LightDir: {r: 1, g: 1, b: -1, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - base_color: {r: 0.19999996, g: 0.6, b: 1, a: 1}
-    - cam_forward: {r: 0.5879088, g: -0.34037948, b: 0.7338291, a: 0}
-    - cam_pos: {r: -1.4857934, g: 0.6011212, b: -1.7130307, a: 0}
-    - cam_right: {r: 0.78042996, g: 0, b: -0.62524325, a: 0}
-    - cam_up: {r: -0.21281992, g: -0.9402882, b: -0.26564234, a: 0}
+    - cam_forward: {r: 0.5720617, g: 0.5877857, b: 0.5720606, a: 0}
+    - cam_pos: {r: 0.036704924, g: -0.47341976, b: -1.8670895, a: 0}
+    - cam_right: {r: 0.70710605, g: 0, b: -0.7071075, a: 0}
+    - cam_up: {r: 0.41562772, g: -0.80901664, b: 0.41562685, a: 0}
     - light_direction: {r: -3.08, g: -90, b: -67.91, a: 1}
     - moon_color: {r: 0.0754717, g: 0.0754717, b: 0.0754717, a: 1}
     - moon_pos: {r: 0.86, g: 0.21, b: 0, a: 0}
