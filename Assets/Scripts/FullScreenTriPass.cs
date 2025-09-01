@@ -1,8 +1,10 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+#if RENDER_GRAPH_ENABLED
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
-using UnityEngine.Rendering.Universal;
+#endif
 
 public class FullScreenTriPass : ScriptableRenderPass
 {
@@ -23,6 +25,7 @@ public class FullScreenTriPass : ScriptableRenderPass
         colorTargetHandle = cameraColorHandle;
     }
     
+#if RENDER_GRAPH_ENABLED
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
     {
         var resourceData = frameData.Get<UniversalResourceData>();
@@ -46,7 +49,21 @@ public class FullScreenTriPass : ScriptableRenderPass
         RenderGraphUtils.BlitMaterialParameters blitParams = new RenderGraphUtils.BlitMaterialParameters(dst, src, material, shaderPassIndex);
         renderGraph.AddBlitPass(blitParams, "FullScreenTriPassBlit");
     }
+#endif
 
+    public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+    {
+#if !RENDER_GRAPH_ENABLED
+        if (material == null)
+            return;
+
+        CommandBuffer cmd = CommandBufferPool.Get("FullScreenTriPass");
+        var src = renderingData.cameraData.renderer.cameraColorTargetHandle;
+        Blit(cmd, src, src, material, shaderPassIndex);
+        context.ExecuteCommandBuffer(cmd);
+        CommandBufferPool.Release(cmd);
+#endif
+    }
     public override void OnCameraCleanup(CommandBuffer cmd)
     {
     }
