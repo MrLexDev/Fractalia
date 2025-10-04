@@ -43,18 +43,26 @@ Shader "Custom/RayMarchRenderer"
 
     SubShader
     {
-        //Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
-        Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" }
-        LOD 100
+        ////Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
+        //Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" }
+        //LOD 100
+        Tags{ "RenderType"="Transparent" "RenderPipeline"="UniversalPipeline" "Queue"="Transparent-1" }
+        ZWrite Off
+        ZTest Always
+        Cull Off
+        Blend Off
 
         Pass
         {
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
-            Name "InfiniteSphereFieldPass"
+            Name "RaymarchFS"
             Tags { "LightMode"="UniversalForward" } // O el LightMode apropiado
 
             HLSLPROGRAM
+            #pragma target 3.0
+            #pragma multi_compile _ _DEBUG_OVERLAY
+            
             #pragma vertex vertex_full_screen_triangle
             #pragma fragment fragment_render_fractal
 

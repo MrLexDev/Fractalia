@@ -119,7 +119,7 @@ fractal_output sdf_mandelbox(float3 position)
 // -----------------------------------------------------------------------
 // SDF para una Pirámide de Sierpinski (Tetraedro de Sierpinski)
 // -----------------------------------------------------------------------
-static const int   SIERPINSKI_ITERATIONS = 30;
+static const int   SIERPINSKI_ITERATIONS = 5;
 static const float SIERPINSKI_SCALE      = 2.0;
 static const float3 SIERPINSKI_OFFSET_VEC = float3(1.0, 1.0, 1.0);
 
@@ -169,7 +169,7 @@ fractal_output sdf_mandelbulb_scaled(float3 position)
 
 fractal_output fractal_signed_distance(float3 position)
 {
-    return sdf_mandelbulb_scaled(position);
+    return sdf_mandelbulb(position);
 }
 
 
