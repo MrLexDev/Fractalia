@@ -83,7 +83,11 @@ public class SphereFieldCameraController : MonoBehaviour
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
         _yaw += mouseX;
-        _pitch -= mouseY;
+        var cameraInverted = 1;
+        #if UNITY_EDITOR
+        cameraInverted = -1;
+        #endif
+        _pitch += mouseY * cameraInverted;
         _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
 
         // Aplicar rotación

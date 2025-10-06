@@ -20,9 +20,12 @@ public class FullScreenTriPass : ScriptableRenderPass
     }
 
     // This method is unused, dont know why is here
-    public void Setup(RTHandle cameraColorHandle)
+    public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
     {
-        colorTargetHandle = cameraColorHandle;
+#if !RENDER_GRAPH_ENABLED
+        ConfigureInput(ScriptableRenderPassInput.Color);
+        colorTargetHandle = renderingData.cameraData.renderer.cameraColorTargetHandle;
+#endif
     }
     
 #if RENDER_GRAPH_ENABLED
@@ -58,7 +61,12 @@ public class FullScreenTriPass : ScriptableRenderPass
             return;
 
         CommandBuffer cmd = CommandBufferPool.Get("FullScreenTriPass");
-        var src = renderingData.cameraData.renderer.cameraColorTargetHandle;
+        var src = colorTargetHandle;
+        if (src == null)
+        {
+            CommandBufferPool.Release(cmd);
+            return;
+        }
         Blit(cmd, src, src, material, shaderPassIndex);
         context.ExecuteCommandBuffer(cmd);
         CommandBufferPool.Release(cmd);
