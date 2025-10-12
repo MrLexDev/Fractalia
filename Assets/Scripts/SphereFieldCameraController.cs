@@ -33,8 +33,8 @@ public class SphereFieldCameraController : MonoBehaviour
         _pitch = angles.x;
         
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        //Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.visible = false;
 
         if (!rayMarchMaterial)
         {
