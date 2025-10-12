@@ -83,11 +83,7 @@ public class SphereFieldCameraController : MonoBehaviour
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
         _yaw += mouseX;
-        var cameraInverted = 1;
-        #if UNITY_EDITOR
-        cameraInverted = -1;
-        #endif
-        _pitch += mouseY * cameraInverted;
+        _pitch += mouseY * -1;
         _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
 
         // Aplicar rotación
@@ -114,7 +110,11 @@ public class SphereFieldCameraController : MonoBehaviour
         rayMarchMaterial.SetVector(CamRight, new Vector4(right.x, right.y, right.z, 0));
 
         // 4) Vector “up” en world space
-        Vector3 up = -mainCamera.transform.up.normalized;
+        Vector3 up = mainCamera.transform.up.normalized;
+        if (SystemInfo.graphicsUVStartsAtTop)
+        {
+            up = -up;
+        }
         rayMarchMaterial.SetVector(CamUp, new Vector4(up.x, up.y, up.z, 0));
 
         // 5) Field of view
