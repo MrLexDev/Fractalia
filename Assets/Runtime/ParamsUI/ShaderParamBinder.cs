@@ -4,10 +4,10 @@ using UnityEngine;
 public sealed class ShaderParamBinderMaterial : MonoBehaviour
 {
     [Header("Target material (the same instance your PC_Renderer uses)")]
-    public Material targetMaterial;
+    public SphereFieldCameraController targetMaterialHolder;
 
     [Tooltip("Instancia una copia en runtime para no modificar el asset en disco.")]
-    public bool instantiateAtAwake = true;
+    public bool instantiateAtAwake = false;
 
     Material _mat;
 
@@ -15,12 +15,15 @@ public sealed class ShaderParamBinderMaterial : MonoBehaviour
 
     void Awake()
     {
-        if (!targetMaterial){
+        /*
+        if (!targetMaterialHolder){
             Debug.LogError("[Binder] targetMaterial is null", this);
             return;
         }
-        _mat = instantiateAtAwake ? new Material(targetMaterial) : targetMaterial;
-        if (instantiateAtAwake) targetMaterial = _mat; // visible en el Inspector
+        _mat = instantiateAtAwake ? new Material(targetMaterialHolder.rayMarchMaterial) : targetMaterialHolder.rayMarchMaterial;
+        if (instantiateAtAwake) targetMaterialHolder.rayMarchMaterial = _mat; // visible en el Inspector
+        */
+        _mat = targetMaterialHolder.rayMarchMaterial;
     }
 
     int Id(string name) => Shader.PropertyToID(name);

@@ -368,7 +368,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa2da5b3277f325448120d4b788c1754, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShaderParamBinder
-  targetMaterial: {fileID: 2100000, guid: aefaadb6d216b6543b5bb635164414ed, type: 2}
+  targetMaterialHolder: {fileID: 1349140066}
   instantiateAtAwake: 1
 --- !u!1 &1533113708
 GameObject:
