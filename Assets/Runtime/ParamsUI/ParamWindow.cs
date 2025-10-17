@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -18,7 +19,6 @@ namespace ParamsUI.UITK
         {
             if (_uiDocument == null) _uiDocument = GetComponent<UIDocument>();
 
-            // Registrar builders disponibles
             _buttonBuilder = new ButtonBuilder(FindCommandByKey);
             _builders.Add(new FloatSliderBuilder());
             _builders.Add(new IntFieldBuilder());
@@ -26,7 +26,6 @@ namespace ParamsUI.UITK
             _builders.Add(new EnumDropdownBuilder());
             _builders.Add(new FloatFieldBuilder());
             _builders.Add(new Vector4FieldBuilder());
-            // Aquí puedes registrar ColorFieldBuilder, Vector3FieldBuilder, etc.
         }
 
         CommandDef FindCommandByKey(string key) => Catalog?.AllCommands.FirstOrDefault(c => c.Key == key);
@@ -37,103 +36,161 @@ namespace ParamsUI.UITK
         {
             var root = _uiDocument.rootVisualElement;
             root.Clear();
-
             if (Catalog == null) return;
 
-            // Layout básico
-            var container = new VisualElement { style = { flexDirection = FlexDirection.Row, flexGrow = 1 } };
-            var left = new ScrollView { style = { width = 220, borderRightWidth = 1, borderRightColor = new StyleColor(new Color(0,0,0,0.2f)) } };
-            var right = new ScrollView { style = { flexGrow = 1, paddingLeft = 8, paddingRight = 8 } };
-            container.Add(left);
-            container.Add(right);
+            ApplyStyles(root); // <- ver abajo
 
-            var header = new VisualElement { style = { flexDirection = FlexDirection.Row, paddingLeft = 6, paddingTop = 6, paddingRight = 6 } };
-            var search = new TextField { label = "Search", style = { flexGrow = 1 } };
-            var reset = new Button(() => ResetVisible(right)) { text = "Reset Section" };
+            // Header
+            var header = new VisualElement();
+            header.AddToClassList("params-header");
+            var search = new TextField { label = "Search" };
+            search.AddToClassList("params-search");
+            var reset = new Button(() => ResetVisible(null)) { text = "Reset Section" };
+            reset.AddToClassList("params-reset");
             header.Add(search);
             header.Add(reset);
-
             root.Add(header);
-            root.Add(container);
 
-            // Agrupar por GroupPath (foldouts)
+            // Tabs (Toolbar) + Pages
+            var tabsBar = new Toolbar();
+            tabsBar.AddToClassList("params-tabs");
+            var pages = new VisualElement();
+            pages.AddToClassList("params-pages");
+
+            root.Add(tabsBar);
+            root.Add(pages);
+
+            // Agrupar por grupo → una página por pestaña
             var groups = Catalog.AllParams
                 .GroupBy(p => p.GroupPath ?? "")
                 .OrderBy(g => g.Key);
 
-            var groupToPanel = new Dictionary<string, VisualElement>();
+            var pageByKey = new Dictionary<string, VisualElement>();
+            var toggles = new List<ToolbarToggle>();
 
             foreach (var g in groups)
             {
-                var fo = new Foldout { text = string.IsNullOrWhiteSpace(g.Key) ? "(Root)" : g.Key, value = false };
-                left.Add(fo);
+                string key = string.IsNullOrWhiteSpace(g.Key) ? "(Root)" : g.Key;
 
-                var panel = new VisualElement { style = { flexDirection = FlexDirection.Column, paddingTop = 4, paddingBottom = 12 } };
-                groupToPanel[g.Key] = panel;
+                // Pestaña
+                var tab = new ToolbarToggle { text = key };
+                tab.AddToClassList("params-tab");
+                toggles.Add(tab);
+                tabsBar.Add(tab);
 
-                fo.RegisterValueChangedCallback(_ =>
-                {
-                    right.Clear();
-                    right.Add(panel);
-                });
+                // Página
+                var page = new ScrollView();
+                page.AddToClassList("params-page");
+                pageByKey[key] = page;
+                pages.Add(page);
 
+                // Contenido de la página
                 foreach (var param in g.OrderBy(p => p.Label))
                 {
                     if (param.Meta.VisibleIf != null && !param.Meta.VisibleIf()) continue;
 
                     var builder = _builders.FirstOrDefault(b => b.Supports(param.ValueType, param.Meta));
+                    VisualElement ve;
                     if (builder == null)
                     {
-                        // Fallback simple: label + text field
-                        var fallback = new TextField(param.Label) { value = param.GetBoxed().ToString() };
-                        fallback.RegisterValueChangedCallback(evt =>
+                        ve = new TextField(param.Label) { value = param.GetBoxed()?.ToString() ?? "" };
+                        ve.RegisterCallback<ChangeEvent<string>>(evt =>
                         {
                             try
                             {
                                 var cast = Convert.ChangeType(evt.newValue, param.ValueType);
                                 param.SetBoxed(cast);
-                            }
-                            catch { /* ignore parse */ }
+                            } catch { }
                         });
-                        panel.Add(fallback);
-                        continue;
+                    }
+                    else
+                    {
+                        ve = builder.Build(param);
+                        builder.Bind(ve, param);
                     }
 
-                    var ve = builder.Build(param);
-                    builder.Bind(ve, param);
-                    panel.Add(ve);
+                    ve.AddToClassList("param-row"); // estilo común por fila
+                    page.Add(ve);
                 }
 
-                // Comandos (botones) del mismo grupo
+                // Comandos del mismo grupo
                 foreach (var cmd in Catalog.AllCommands.Where(c => c.GroupPath == g.Key).OrderBy(c => c.Label))
                 {
-                    panel.Add(_buttonBuilder.BuildButton(cmd));
+                    var btn = _buttonBuilder.BuildButton(cmd);
+                    btn.AddToClassList("param-button");
+                    page.Add(btn);
                 }
+
+                // Click de pestaña → mostrar página
+                tab.RegisterValueChangedCallback(evt =>
+                {
+                    if (!evt.newValue) return;
+                    SelectTab(key, toggles, pageByKey);
+                });
             }
 
-            // Búsqueda rápida (simple)
+            // Selecciona la primera pestaña
+            var first = toggles.FirstOrDefault();
+            if (first != null)
+            {
+                first.SetValueWithoutNotify(true);
+                SelectTab(first.text, toggles, pageByKey);
+            }
+
+            // Búsqueda: filtra solo en la página activa
             search.RegisterValueChangedCallback(evt =>
             {
-                var q = evt.newValue?.Trim() ?? "";
-                foreach (var kv in groupToPanel)
+                var q = (evt.newValue ?? "").Trim();
+                var active = pageByKey.Values.FirstOrDefault(p => p.style.display == DisplayStyle.Flex);
+                if (active == null) return;
+
+                foreach (var child in active.Children())
                 {
-                    foreach (var child in kv.Value.Children())
-                    {
-                        bool match = true;
-                        if (child is BaseField<float> bf) match = bf.label.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0;
-                        else if (child is Toggle t) match = t.label.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0;
-                        else if (child is TextField tf) match = tf.label.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0;
-                        else if (child is IntegerField inf) match = inf.label.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0;
-                        child.style.display = match ? DisplayStyle.Flex : DisplayStyle.None;
-                    }
+                    string label = ExtractLabel(child);
+                    bool match = string.IsNullOrEmpty(q) || (label?.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0);
+                    child.style.display = match ? DisplayStyle.Flex : DisplayStyle.None;
                 }
             });
         }
 
-        void ResetVisible(VisualElement rightPanel)
+        // Helpers ------------------------------------------------------------
+        static void SelectTab(string key, List<ToolbarToggle> toggles, Dictionary<string, VisualElement> pageByKey)
         {
-            // Si quieres soportar “valor por defecto”, añade DefaultValue en ParamMeta y restáuralo aquí.
-            // Ejemplo placeholder (no-op).
+            foreach (var t in toggles)
+                t.SetValueWithoutNotify(t.text == key);
+
+            foreach (var kv in pageByKey)
+                kv.Value.style.display = kv.Key == key ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        static string ExtractLabel(VisualElement ve)
+        {
+            // intenta coger la etiqueta de los campos más comunes
+            if (ve is BaseField<float> bf) return bf.label;
+            if (ve is IntegerField inf) return inf.label;
+            if (ve is Toggle t) return t.label;
+            if (ve is TextField tf) return tf.label;
+            if (ve is BaseField<Vector4> v4f) return v4f.label;
+            // fallback: busca un Label hijo
+            var lbl = ve.Q<Label>();
+            return lbl?.text;
+        }
+        void ApplyStyles(VisualElement root)
+        {
+            root.style.flexGrow = 1;
+            root.AddToClassList("params-root");
+
+            var ss = Resources.Load<StyleSheet>("ParamsUI/params"); // Assets/Resources/ParamsUI/params.uss
+            if (ss != null && !root.styleSheets.Contains(ss))
+                root.styleSheets.Add(ss);
+
+            // Opacidad de fondo (viene de USS, aquí por si quieres retocarla en vivo)
+            root.userData = 0f;
+        }
+
+        void ResetVisible(VisualElement _)
+        {
+            // TODO: restaurar valores por defecto si guardas DefaultValue en ParamMeta
         }
     }
 }

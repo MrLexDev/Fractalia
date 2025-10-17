@@ -11,7 +11,42 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
     void Start()
     {
         var cat = new ParamCatalog();
+        var controller = binder != null ? binder.targetMaterialHolder : null;
 
+        if (controller != null)
+        {
+            cat.Add(new ParamDef<SphereFieldCameraController.CameraMode>("camera_mode", "Camera Mode",
+                    () => controller.Mode,
+                    v => controller.Mode = v)
+                .InGroup("Camera"));
+
+            var freeSpeedMeta = ParamMeta.Range(0.1, 100, 0.1);
+            freeSpeedMeta.Unit = "m/s";
+
+            cat.Add(new ParamDef<float>("camera_free_move_speed", "Free Move Speed",
+                    () => controller.MoveSpeed,
+                    v => controller.MoveSpeed = v)
+                .InGroup("Camera/Free")
+                .WithMeta(freeSpeedMeta));
+
+            var orbitDistanceMeta = ParamMeta.Range(0.1, 200, 0.1);
+
+            cat.Add(new ParamDef<float>("camera_orbit_distance", "Orbit Distance",
+                    () => controller.OrbitDistance,
+                    v => controller.OrbitDistance = v)
+                .InGroup("Camera/Orbit")
+                .WithMeta(orbitDistanceMeta));
+
+            var orbitSpeedMeta = ParamMeta.Range(-360, 360, 1);
+            orbitSpeedMeta.Unit = "deg/s";
+
+            cat.Add(new ParamDef<float>("camera_orbit_speed", "Orbit Speed",
+                    () => controller.OrbitSpeed,
+                    v => controller.OrbitSpeed = v)
+                .InGroup("Camera/Orbit")
+                .WithMeta(orbitSpeedMeta));
+        }
+        
         // ── Cámara ────────────────────────────────────────────────────────
         cat.Add(new ParamDef<float>("cam_fov", "Camera FOV",
             () => binder.GetFloat("cam_fov"),

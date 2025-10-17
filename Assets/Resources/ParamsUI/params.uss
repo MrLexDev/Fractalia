@@ -1,0 +1,123 @@
+:root {
+    --bg: #0d1016;
+    --panel: #121622;
+    --border: #2a2f3a;
+    --fg: #e6ebf3;
+    --muted: #9aa4b2;
+    --accent: #5aa1ff;
+    --label-width: 140px;
+    --label-width-compact: 120px;
+    --radius: 12px;
+    --opacity: 0.85; /* recuerda que el código puede sobreescribirla si quieres */
+}
+
+/* Root transparente para ver el fractal detrás */
+.params-root {
+    background-color: rgba(0,0,0,0); /* no cubre la escena */
+    color: var(--fg);
+}
+
+/* Sidebar flotante a la derecha */
+.params-dock-right {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    bottom: 12px;
+    background-color: rgba(18, 22, 34, var(--opacity));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Header compacto */
+.params-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: rgba(0,0,0,0.2);
+}
+.params-search { flex-grow: 1; }
+.params-reset  { min-width: 70px; }
+
+/* Tabs arriba, finos */
+.params-tabs {
+    height: 30px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: rgba(0,0,0,0.2);
+    align-items: center;
+    padding: 0 4px;
+}
+.params-tab {
+    margin: 0 2px;
+    padding: 0 8px;
+    min-height: 22px;
+    border-radius: 6px;
+    -unity-font-style: normal;
+    font-size: 11px;
+}
+.params-tab:checked {
+    background-color: #1b2130;
+}
+
+/* Páginas */
+.params-pages {
+    flex-grow: 1;
+    padding: 6px 2px;
+}
+.params-page {
+    flex-grow: 1;
+    padding: 4px;
+    gap: 4px;
+}
+
+/* Filas compactas */
+.param-row {
+    flex-direction: row;
+    align-items: center;
+    padding: 4px 6px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+}
+.param-row:hover {
+    background-color: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.06);
+}
+.param-row .unity-label {
+    min-width: var(--label-width);
+    color: var(--muted);
+}
+
+/* Modo compacto extra */
+.param-row--compact { padding: 2px 4px; }
+.param-row--compact .unity-label {
+    min-width: var(--label-width-compact);
+    font-size: 11px;
+}
+
+/* Ajustes a campos base para que “ocupen menos” */
+.param-row .unity-base-field__input {
+    min-height: 20px;
+    height: 20px;
+    padding: 0 4px;
+}
+.param-row .unity-integer-field,
+.param-row .unity-float-field,
+.param-row .unity-text-field {
+    min-height: 20px;
+}
+
+/* Slider finito */
+.param-row .unity-base-slider {
+    height: 16px;
+    min-height: 16px;
+}
+
+/* Botones */
+.param-button { margin-top: 4px; }

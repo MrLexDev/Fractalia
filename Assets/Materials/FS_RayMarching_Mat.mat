@@ -140,7 +140,7 @@ Material:
     - normal_delta_far: 0.003
     - orbit_scale: 1
     - param_hue: 0.1
-    - power: 12
+    - power: 6.269
     - sphere_radius: 1.4
     - surface_epsilon: 0.0001
     - surface_epsilon_far: 0.005
@@ -155,10 +155,10 @@ Material:
     - _LightDir: {r: 1, g: 1, b: -1, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - base_color: {r: 0.41785628, g: 0.15714252, b: 0.76785713, a: 1}
-    - cam_forward: {r: 0.09046511, g: 0.97514933, b: 0.20223698, a: 0}
-    - cam_pos: {r: 0.4969096, g: -0.59065473, b: -1.7195156, a: 0}
-    - cam_right: {r: 0.9128339, g: -0.000000014901161, b: -0.40833098, a: 0}
-    - cam_up: {r: 0.3981837, g: -0.22154848, b: 0.8901494, a: 0}
+    - cam_forward: {r: 0.99207807, g: 0, b: -0.12562273, a: 0}
+    - cam_pos: {r: -2.4300852, g: 0, b: 0.30771172, a: 0}
+    - cam_right: {r: -0.12562273, g: 0, b: -0.99207807, a: 0}
+    - cam_up: {r: -0, g: -1, b: -0, a: 0}
     - light_direction: {r: 0.95059705, g: -0.19361956, b: -0.24264517, a: 0}
     - moon_color: {r: 0.0754717, g: 0.0754717, b: 0.0754717, a: 1}
     - moon_pos: {r: 0.86, g: 0.21, b: 0, a: 0}

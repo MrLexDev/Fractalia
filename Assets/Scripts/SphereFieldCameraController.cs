@@ -3,6 +3,12 @@ using UnityEngine.Serialization;
 
 public class SphereFieldCameraController : MonoBehaviour
 {
+    public enum CameraMode
+    {
+        Free,
+        Orbit
+    }
+    
     private static readonly int CamPos = Shader.PropertyToID("cam_pos");
     private static readonly int CamForward = Shader.PropertyToID("cam_forward");
     private static readonly int CamRight = Shader.PropertyToID("cam_right");
@@ -14,7 +20,23 @@ public class SphereFieldCameraController : MonoBehaviour
     [FormerlySerializedAs("raymarchMaterial")] public Material rayMarchMaterial;
 
     [Header("Movement")]
-    public float moveSpeed = 5f;
+    [SerializeField]
+    private CameraMode cameraMode = CameraMode.Orbit;
+
+    [SerializeField]
+    private float moveSpeed = 5f;
+
+    [Header("Orbit")]
+    public Transform orbitTarget;
+
+    [SerializeField]
+    private Vector3 orbitCenter = Vector3.zero;
+
+    [SerializeField]
+    private float orbitDistance = 10f;
+
+    [SerializeField]
+    private float orbitSpeed = 20f;
 
     [Header("Mouse rotation")]
     public float mouseSensitivity = 2.0f;
@@ -23,6 +45,7 @@ public class SphereFieldCameraController : MonoBehaviour
 
     private float _yaw;   // rotación horizontal (Y)
     private float _pitch; // rotación vertical (X)
+    private float _orbitAngle;
 
     private void Start()
     {
@@ -40,12 +63,30 @@ public class SphereFieldCameraController : MonoBehaviour
         {
             Debug.LogError("Assign correct shader material to the sphere field camera controller");
         }
+        
+        if (cameraMode == CameraMode.Orbit)
+        {
+            Vector3 center = GetOrbitCenter();
+            Vector3 toCamera = mainCamera.transform.position - center;
+            if (toCamera.sqrMagnitude > 0.0001f)
+            {
+                orbitDistance = toCamera.magnitude;
+                _orbitAngle = Mathf.Atan2(toCamera.z, toCamera.x) * Mathf.Rad2Deg;
+            }
+        }
     }
 
     private void Update()
     {
-        HandleMovement();
-        HandleMouseRotation();
+        if (cameraMode == CameraMode.Free)
+        {
+            HandleMovement();
+            HandleMouseRotation();
+        }
+        else
+        {
+            HandleOrbit();
+        }
         UpdateShaderCameraParams();
     }
 
@@ -66,8 +107,10 @@ public class SphereFieldCameraController : MonoBehaviour
 
         Vector3 move = rightFlat * horizontal + forwardFlat * vertical;
 
-        mainCamera.transform.position += move.normalized * (moveSpeed * Time.deltaTime);
-
+        if (move.sqrMagnitude > 0f)
+        {
+            mainCamera.transform.position += move.normalized * (moveSpeed * Time.deltaTime);
+        }
         // 3) Subir/bajar con Q/E
         if (Input.GetKey(KeyCode.E))
             mainCamera.transform.position += Vector3.up * (moveSpeed * Time.deltaTime);
@@ -88,6 +131,21 @@ public class SphereFieldCameraController : MonoBehaviour
 
         // Aplicar rotación
         mainCamera.transform.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
+    }
+    
+    private void HandleOrbit()
+    {
+        Vector3 center = GetOrbitCenter();
+        if (orbitDistance < 0.01f)
+        {
+            orbitDistance = 0.01f;
+        }
+
+        _orbitAngle += orbitSpeed * Time.deltaTime;
+        float angleRad = _orbitAngle * Mathf.Deg2Rad;
+        Vector3 offset = new Vector3(Mathf.Cos(angleRad), 0f, Mathf.Sin(angleRad)) * orbitDistance;
+        mainCamera.transform.position = center + offset;
+        mainCamera.transform.LookAt(center, Vector3.up);
     }
 
     // --------------------------------------------------------
@@ -120,5 +178,66 @@ public class SphereFieldCameraController : MonoBehaviour
         // 5) Field of view
         float fov = mainCamera.fieldOfView;
         rayMarchMaterial.SetFloat(CamFov, fov);
+    }
+    private Vector3 GetOrbitCenter()
+    {
+        if (orbitTarget != null)
+        {
+            return orbitTarget.position;
+        }
+
+        return orbitCenter;
+    }
+
+    public CameraMode Mode
+    {
+        get => cameraMode;
+        set
+        {
+            if (cameraMode == value) return;
+
+            cameraMode = value;
+
+            if (cameraMode == CameraMode.Free)
+            {
+                Vector3 angles = mainCamera.transform.eulerAngles;
+                _yaw = angles.y;
+                _pitch = angles.x;
+            }
+            else
+            {
+                Vector3 center = GetOrbitCenter();
+                Vector3 toCamera = mainCamera.transform.position - center;
+                if (toCamera.sqrMagnitude > 0.0001f)
+                {
+                    orbitDistance = toCamera.magnitude;
+                    _orbitAngle = Mathf.Atan2(toCamera.z, toCamera.x) * Mathf.Rad2Deg;
+                }
+            }
+        }
+    }
+
+    public float MoveSpeed
+    {
+        get => moveSpeed;
+        set => moveSpeed = Mathf.Max(0f, value);
+    }
+
+    public float OrbitDistance
+    {
+        get => orbitDistance;
+        set => orbitDistance = Mathf.Max(0.01f, value);
+    }
+
+    public float OrbitSpeed
+    {
+        get => orbitSpeed;
+        set => orbitSpeed = value;
+    }
+
+    public Vector3 OrbitCenter
+    {
+        get => orbitCenter;
+        set => orbitCenter = value;
     }
 }
