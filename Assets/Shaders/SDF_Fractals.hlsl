@@ -152,21 +152,6 @@ fractal_output sdf_sierpinski(float3 p)
     return result;
 }
 
-fractal_output sdf_mandelbulb_scaled(float3 position)
-{
-    // 1) escalar la posición (acercamos el mundo al fractal)
-    float3 pos = position * g_Scale;
-
-    // 2) cálculo idéntico al que ya tienes…
-    fractal_output f = sdf_mandelbulb(pos);
-
-    // 3) corregir la distancia: si todo está 4× mayor,
-    //    la distancia real es 4× menor
-    f.sdf_distance /= g_Scale;
-
-    return f;
-}
-
 fractal_output fractal_signed_distance(float3 position)
 {
     return sdf_mandelbulb(position);

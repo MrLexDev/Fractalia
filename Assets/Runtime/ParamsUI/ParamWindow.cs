@@ -25,7 +25,7 @@ namespace ParamsUI.UITK
             _builders.Add(new BoolToggleBuilder());
             _builders.Add(new EnumDropdownBuilder());
             _builders.Add(new FloatFieldBuilder());
-            _builders.Add(new Vector4FieldBuilder());
+            _builders.Add(new VectorLikeFieldBuilder());
         }
 
         CommandDef FindCommandByKey(string key) => Catalog?.AllCommands.FirstOrDefault(c => c.Key == key);
@@ -170,6 +170,8 @@ namespace ParamsUI.UITK
             if (ve is IntegerField inf) return inf.label;
             if (ve is Toggle t) return t.label;
             if (ve is TextField tf) return tf.label;
+            if (ve is BaseField<Vector2> v2f) return v2f.label;
+            if (ve is BaseField<Vector3> v3f) return v3f.label;
             if (ve is BaseField<Vector4> v4f) return v4f.label;
             // fallback: busca un Label hijo
             var lbl = ve.Q<Label>();

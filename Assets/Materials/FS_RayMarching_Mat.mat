@@ -124,12 +124,19 @@ Material:
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
-    - ao_brightness: 0.3
+    - ao_brightness: 1
     - bailout: 2
     - cam_fov: 102.3
     - cell_size: 4.43
     - debug_steps: 0
+    - fractal_blend: 0
     - g_Scale: 0.6
+    - glow_color_boost: 0.1
+    - glow_intensity: 10
+    - glow_orbit_falloff: 0
+    - glow_orbit_strength: 0
+    - glow_rim_power: 1
+    - glow_rim_strength: 2.3
     - iterations: 20
     - lod_far_distance: 25
     - lod_near_distance: 2
@@ -140,7 +147,7 @@ Material:
     - normal_delta_far: 0.003
     - orbit_scale: 1
     - param_hue: 0.1
-    - power: 6.269
+    - power: 3.225
     - sphere_radius: 1.4
     - surface_epsilon: 0.0001
     - surface_epsilon_far: 0.005
@@ -155,11 +162,12 @@ Material:
     - _LightDir: {r: 1, g: 1, b: -1, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - base_color: {r: 0.41785628, g: 0.15714252, b: 0.76785713, a: 1}
-    - cam_forward: {r: 0.99207807, g: 0, b: -0.12562273, a: 0}
-    - cam_pos: {r: -2.4300852, g: 0, b: 0.30771172, a: 0}
-    - cam_right: {r: -0.12562273, g: 0, b: -0.99207807, a: 0}
+    - cam_forward: {r: 0.95961267, g: 0, b: 0.28132468, a: 0}
+    - cam_pos: {r: -1.077645, g: 0, b: -0.31592777, a: 0}
+    - cam_right: {r: 0.28132468, g: 0, b: -0.95961267, a: 0}
     - cam_up: {r: -0, g: -1, b: -0, a: 0}
-    - light_direction: {r: 0.95059705, g: -0.19361956, b: -0.24264517, a: 0}
+    - glow_color: {r: 1, g: 0.85, b: 0.7, a: 1}
+    - light_direction: {r: 1, g: -1, b: 8, a: 0}
     - moon_color: {r: 0.0754717, g: 0.0754717, b: 0.0754717, a: 1}
     - moon_pos: {r: 0.86, g: 0.21, b: 0, a: 0}
     - orbit_color_0: {r: 0.8483891, g: 0.8483891, b: 0.8773585, a: 1}

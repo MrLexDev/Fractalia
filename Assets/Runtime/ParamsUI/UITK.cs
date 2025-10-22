@@ -215,38 +215,194 @@ namespace ParamsUI.UITK
         }
     }
     
-    public sealed class Vector4FieldBuilder : IControlBuilder
+    public sealed class VectorLikeFieldBuilder : IControlBuilder
     {
-        public bool Supports(Type t, ParamMeta meta) => t == typeof(Vector4);
+        // ----------------- Public API -----------------
+        public bool Supports(Type t, ParamMeta meta) => TryGetInfo(t, out _);
 
         public VisualElement Build(IParam p)
         {
-            var row = new VisualElement { style = { flexDirection = FlexDirection.Row } };
+            var info = GetInfoOrThrow(p.ValueType);
+            var row  = new VisualElement { style = { flexDirection = FlexDirection.Row } };
             row.Add(new Label(p.Label) { style = { minWidth = 140 } });
-            var field = new Vector4Field { value = (Vector4)p.GetBoxed(), style = { flexGrow = 1 } };
-            if (!string.IsNullOrEmpty(p.Meta.Tooltip)) field.tooltip = p.Meta.Tooltip;
-            row.Add(field);
+
+            // Cajas numéricas
+            var (xF, yF, zF, wF) = (new FloatField(), new FloatField(), new FloatField(), new FloatField());
+            xF.style.flexGrow = yF.style.flexGrow = zF.style.flexGrow = wF.style.flexGrow = 1;
+
+            // Valores iniciales
+            var (x, y, z, w) = info.Getter(p.GetBoxed());
+            xF.value = x; yF.value = y;
+            if (info.Dim >= 3) zF.value = z;
+            if (info.Dim == 4) wF.value = w;
+
+            // Layout: añade solo las que correspondan
+            row.Add(xF); row.Add(yF);
+            if (info.Dim >= 3) row.Add(zF);
+            if (info.Dim == 4) row.Add(wF);
+
+            if (!string.IsNullOrEmpty(p.Meta.Tooltip)) row.tooltip = p.Meta.Tooltip;
+
+            // Guarda refs en userData para el Bind
+            row.userData = new VecFields(info, xF, yF, zF, wF);
             return row;
         }
 
         public void Bind(VisualElement ve, IParam p)
         {
-            var field = ve.Q<Vector4Field>();
+            var vf = (VecFields)ve.userData;
             bool updating = false;
 
-            field.RegisterValueChangedCallback(evt =>
+            Action push = () =>
             {
                 if (updating) return;
-                p.SetBoxed(evt.newValue);
-            });
+                var obj = vf.Info.Setter(
+                    vf.X.value,
+                    vf.Y.value,
+                    vf.Info.Dim >= 3 ? vf.Z.value : 0f,
+                    vf.Info.Dim == 4 ? vf.W.value : 0f
+                );
+                p.SetBoxed(obj);
+            };
+
+            vf.X.RegisterValueChangedCallback(_ => push());
+            vf.Y.RegisterValueChangedCallback(_ => push());
+            if (vf.Info.Dim >= 3) vf.Z.RegisterValueChangedCallback(_ => push());
+            if (vf.Info.Dim == 4) vf.W.RegisterValueChangedCallback(_ => push());
 
             p.Changed += _ =>
             {
                 updating = true;
-                field.SetValueWithoutNotify((Vector4)p.GetBoxed());
+                var (x, y, z, w) = vf.Info.Getter(p.GetBoxed());
+                vf.X.SetValueWithoutNotify(x);
+                vf.Y.SetValueWithoutNotify(y);
+                if (vf.Info.Dim >= 3) vf.Z.SetValueWithoutNotify(z);
+                if (vf.Info.Dim == 4) vf.W.SetValueWithoutNotify(w);
                 updating = false;
             };
         }
+
+        // ----------------- Internals -----------------
+        struct VecInfo
+        {
+            public int Dim;
+            public Func<object, (float x, float y, float z, float w)> Getter;
+            public Func<float, float, float, float, object> Setter;
+        }
+
+        sealed class VecFields
+        {
+            public VecInfo Info; public FloatField X, Y, Z, W;
+            public VecFields(VecInfo info, FloatField x, FloatField y, FloatField z, FloatField w)
+            { Info = info; X = x; Y = y; Z = z; W = w; }
+        }
+
+        static bool TryGetInfo(Type t, out VecInfo info)
+        {
+            // 1) UnityEngine.Vector*
+            if (t == typeof(UnityEngine.Vector2))
+            {
+                info = new VecInfo{
+                    Dim = 2,
+                    Getter = o => { var v = (UnityEngine.Vector2)o; return (v.x, v.y, 0f, 0f); },
+                    Setter = (x,y,z,w) => new UnityEngine.Vector2(x,y)
+                };
+                return true;
+            }
+            if (t == typeof(UnityEngine.Vector3))
+            {
+                info = new VecInfo{
+                    Dim = 3,
+                    Getter = o => { var v = (UnityEngine.Vector3)o; return (v.x, v.y, v.z, 0f); },
+                    Setter = (x,y,z,w) => new UnityEngine.Vector3(x,y,z)
+                };
+                return true;
+            }
+            if (t == typeof(UnityEngine.Vector4))
+            {
+                info = new VecInfo{
+                    Dim = 4,
+                    Getter = o => { var v = (UnityEngine.Vector4)o; return (v.x, v.y, v.z, v.w); },
+                    Setter = (x,y,z,w) => new UnityEngine.Vector4(x,y,z,w)
+                };
+                return true;
+            }
+
+            // 2) System.Numerics.Vector*
+            if (t == typeof(System.Numerics.Vector2))
+            {
+                info = new VecInfo{
+                    Dim = 2,
+                    Getter = o => { var v = (System.Numerics.Vector2)o; return (v.X, v.Y, 0f, 0f); },
+                    Setter = (x,y,z,w) => new System.Numerics.Vector2(x,y)
+                };
+                return true;
+            }
+            if (t == typeof(System.Numerics.Vector3))
+            {
+                info = new VecInfo{
+                    Dim = 3,
+                    Getter = o => { var v = (System.Numerics.Vector3)o; return (v.X, v.Y, v.Z, 0f); },
+                    Setter = (x,y,z,w) => new System.Numerics.Vector3(x,y,z)
+                };
+                return true;
+            }
+            if (t == typeof(System.Numerics.Vector4))
+            {
+                info = new VecInfo{
+                    Dim = 4,
+                    Getter = o => { var v = (System.Numerics.Vector4)o; return (v.X, v.Y, v.Z, v.W); },
+                    Setter = (x,y,z,w) => new System.Numerics.Vector4(x,y,z,w)
+                };
+                return true;
+            }
+
+            // 3) Unity.Mathematics.float*
+            if (t.FullName == "Unity.Mathematics.float2")
+            {
+                info = new VecInfo{
+                    Dim = 2,
+                    Getter = o => (GetField(o,"x"), GetField(o,"y"), 0f, 0f),
+                    Setter = (x,y,z,w) => Activator.CreateInstance(t, x, y)
+                };
+                return true;
+            }
+            if (t.FullName == "Unity.Mathematics.float3")
+            {
+                info = new VecInfo{
+                    Dim = 3,
+                    Getter = o => (GetField(o,"x"), GetField(o,"y"), GetField(o,"z"), 0f),
+                    Setter = (x,y,z,w) => Activator.CreateInstance(t, x, y, z)
+                };
+                return true;
+            }
+            if (t.FullName == "Unity.Mathematics.float4")
+            {
+                info = new VecInfo{
+                    Dim = 4,
+                    Getter = o => (GetField(o,"x"), GetField(o,"y"), GetField(o,"z"), GetField(o,"w")),
+                    Setter = (x,y,z,w) => Activator.CreateInstance(t, x, y, z, w)
+                };
+                return true;
+            }
+
+            info = default;
+            return false;
+
+            static float GetField(object o, string name)
+            {
+                var f = o.GetType().GetField(name);
+                return f != null ? (float)Convert.ChangeType(f.GetValue(o), typeof(float)) : 0f;
+            }
+        }
+
+        static VecInfo GetInfoOrThrow(Type t)
+        {
+            if (TryGetInfo(t, out var info)) return info;
+            throw new NotSupportedException($"VectorLikeFieldBuilder: tipo no soportado: {t.FullName}");
+        }
     }
+
+
     
 }

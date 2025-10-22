@@ -29,7 +29,7 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
                 .InGroup("Camera/Free")
                 .WithMeta(freeSpeedMeta));
 
-            var orbitDistanceMeta = ParamMeta.Range(0.1, 200, 0.1);
+            var orbitDistanceMeta = ParamMeta.Range(0.1, 10, 0.1);
 
             cat.Add(new ParamDef<float>("camera_orbit_distance", "Orbit Distance",
                     () => controller.OrbitDistance,
@@ -49,72 +49,10 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
         
         // ── Cámara ────────────────────────────────────────────────────────
         cat.Add(new ParamDef<float>("cam_fov", "Camera FOV",
-            () => binder.GetFloat("cam_fov"),
-            v  => binder.SetFloat("cam_fov", Mathf.Clamp(v, 1f, 160f)))
+            () => binder.targetMaterialHolder.mainCamera.fieldOfView,
+            v  => binder.targetMaterialHolder.mainCamera.fieldOfView = v)
             .InGroup("Camera")
             .WithMeta(ParamMeta.Range(1, 160, 1)));
-
-        cat.Add(new ParamDef<Vector4>("cam_pos", "Camera Pos (xyz)",
-            () => binder.GetVector("cam_pos"),
-            v  => binder.SetVector("cam_pos", v))
-            .InGroup("Camera"));
-
-        cat.Add(new ParamDef<Vector4>("cam_forward", "Camera Forward",
-            () => binder.GetVector("cam_forward"),
-            v  => binder.SetVector("cam_forward", v))
-            .InGroup("Camera"));
-
-        // ── Raymarch tuning ───────────────────────────────────────────────
-        cat.Add(new ParamDef<float>("max_ray_distance", "Max Ray Distance",
-            () => binder.GetFloat("max_ray_distance"),
-            v  => binder.SetFloat("max_ray_distance", Mathf.Max(0f, v)))
-            .InGroup("Raymarch")
-            .WithMeta(ParamMeta.Range(1, 500, 1)));
-
-        cat.Add(new ParamDef<float>("surface_epsilon", "Surface Epsilon",
-            () => binder.GetFloat("surface_epsilon"),
-            v  => binder.SetFloat("surface_epsilon", Mathf.Max(1e-6f, v)))
-            .InGroup("Raymarch")
-            .WithMeta(ParamMeta.Range(0.000001, 0.01, 0.000001)));
-
-        cat.Add(new ParamDef<int>("max_steps", "Max Steps",
-            () => binder.GetInt("max_steps"),
-            v  => binder.SetInt("max_steps", Mathf.Clamp(v, 1, 2048)))
-            .InGroup("Raymarch")
-            .WithMeta(ParamMeta.Range(1, 2048, 1)));
-
-        cat.Add(new ParamDef<float>("normal_delta", "Normal Delta",
-            () => binder.GetFloat("normal_delta"),
-            v  => binder.SetFloat("normal_delta", Mathf.Max(1e-6f, v)))
-            .InGroup("Raymarch")
-            .WithMeta(ParamMeta.Range(0.000001, 0.02, 0.000001)));
-
-        cat.Add(new ParamDef<float>("surface_epsilon_far", "Surface Epsilon Far",
-            () => binder.GetFloat("surface_epsilon_far"),
-            v  => binder.SetFloat("surface_epsilon_far", Mathf.Max(1e-6f, v)))
-            .InGroup("Raymarch/Far"));
-
-        cat.Add(new ParamDef<float>("normal_delta_far", "Normal Delta Far",
-            () => binder.GetFloat("normal_delta_far"),
-            v  => binder.SetFloat("normal_delta_far", Mathf.Max(1e-6f, v)))
-            .InGroup("Raymarch/Far"));
-
-        cat.Add(new ParamDef<float>("lod_near_distance", "LOD Near",
-            () => binder.GetFloat("lod_near_distance"),
-            v  => binder.SetFloat("lod_near_distance", Mathf.Max(0f, v)))
-            .InGroup("Raymarch/LOD"));
-
-        cat.Add(new ParamDef<float>("lod_far_distance", "LOD Far",
-            () => binder.GetFloat("lod_far_distance"),
-            v  => binder.SetFloat("lod_far_distance", Mathf.Max(0f, v)))
-            .InGroup("Raymarch/LOD"));
-
-        // ── Fractal core ──────────────────────────────────────────────────
-        cat.Add(new ParamDef<int>("iterations", "Iterations",
-            () => binder.GetInt("iterations"),
-            v  => binder.SetInt("iterations", Mathf.Clamp(v, 1, 500)))
-            .InGroup("Fractal")
-            .WithMeta(ParamMeta.Range(1, 500, 1)));
 
         cat.Add(new ParamDef<float>("power", "Power",
             () => binder.GetFloat("power"),
@@ -122,17 +60,7 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
             .InGroup("Fractal")
             .WithMeta(ParamMeta.Range(1, 12, 0.1)));
 
-        cat.Add(new ParamDef<float>("g_Scale", "Scale",
-            () => binder.GetFloat("g_Scale"),
-            v  => binder.SetFloat("g_Scale", v))
-            .InGroup("Fractal"));
-
         // ── Mandelbulb params (MB_*) ──────────────────────────────────────
-        cat.Add(new ParamDef<float>("MB_SCALE", "MB Scale",
-            () => binder.GetFloat("MB_SCALE"),
-            v  => binder.SetFloat("MB_SCALE", v))
-            .InGroup("Fractal/MB"));
-
         cat.Add(new ParamDef<float>("MB_MIN_RADIUS", "MB Min Radius",
             () => binder.GetFloat("MB_MIN_RADIUS"),
             v  => binder.SetFloat("MB_MIN_RADIUS", Mathf.Max(0f, v)))
@@ -194,11 +122,6 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
             () => binder.GetFloat("ao_brightness"),
             v  => binder.SetFloat("ao_brightness", Mathf.Max(0f, v)))
             .InGroup("Shading"));
-
-        cat.Add(new ParamDef<float>("debug_steps", "Debug Ray Steps",
-            () => binder.GetFloat("debug_steps"),
-            v  => binder.SetFloat("debug_steps", Mathf.Max(0f, v)))
-            .InGroup("Debug"));
 
         window.Catalog = cat;
         window.Rebuild();

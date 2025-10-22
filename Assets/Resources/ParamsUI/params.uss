@@ -2,7 +2,8 @@
     --bg: #0d1016;
     --panel: #121622;
     --border: #2a2f3a;
-    --fg: #e6ebf3;
+    --fg: #2a2f3a;
+    --text: #e6ebf3;
     --muted: #9aa4b2;
     --accent: #5aa1ff;
     --label-width: 140px;
