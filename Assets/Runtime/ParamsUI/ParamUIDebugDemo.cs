@@ -8,32 +8,34 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
     public ParamWindow window;
     public ShaderParamBinderMaterial binder;
 
+    SphereFieldCameraController _controller;
+
     void Start()
     {
         var cat = new ParamCatalog();
-        var controller = binder != null ? binder.targetMaterialHolder : null;
+        _controller = binder != null ? binder.targetMaterialHolder : null;
 
-        if (controller != null)
+        if (_controller != null)
         {
             cat.Add(new ParamDef<SphereFieldCameraController.CameraMode>("camera_mode", "Camera Mode",
-                    () => controller.Mode,
-                    v => controller.Mode = v)
+                    () => _controller.Mode,
+                    v => _controller.Mode = v)
                 .InGroup("Camera"));
 
             var freeSpeedMeta = ParamMeta.Range(0.1, 100, 0.1);
             freeSpeedMeta.Unit = "m/s";
 
             cat.Add(new ParamDef<float>("camera_free_move_speed", "Free Move Speed",
-                    () => controller.MoveSpeed,
-                    v => controller.MoveSpeed = v)
+                    () => _controller.MoveSpeed,
+                    v => _controller.MoveSpeed = v)
                 .InGroup("Camera/Free")
                 .WithMeta(freeSpeedMeta));
 
             var orbitDistanceMeta = ParamMeta.Range(0.1, 10, 0.1);
 
             cat.Add(new ParamDef<float>("camera_orbit_distance", "Orbit Distance",
-                    () => controller.OrbitDistance,
-                    v => controller.OrbitDistance = v)
+                    () => _controller.OrbitDistance,
+                    v => _controller.OrbitDistance = v)
                 .InGroup("Camera/Orbit")
                 .WithMeta(orbitDistanceMeta));
 
@@ -41,12 +43,12 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
             orbitSpeedMeta.Unit = "deg/s";
 
             cat.Add(new ParamDef<float>("camera_orbit_speed", "Orbit Speed",
-                    () => controller.OrbitSpeed,
-                    v => controller.OrbitSpeed = v)
+                    () => _controller.OrbitSpeed,
+                    v => _controller.OrbitSpeed = v)
                 .InGroup("Camera/Orbit")
                 .WithMeta(orbitSpeedMeta));
         }
-        
+
         // ── Cámara ────────────────────────────────────────────────────────
         cat.Add(new ParamDef<float>("cam_fov", "Camera FOV",
             () => binder.targetMaterialHolder.mainCamera.fieldOfView,
@@ -125,5 +127,27 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
 
         window.Catalog = cat;
         window.Rebuild();
+
+        if (_controller != null)
+        {
+            _controller.ModeChanged += OnCameraModeChanged;
+            OnCameraModeChanged(_controller.Mode);
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (_controller != null)
+        {
+            _controller.ModeChanged -= OnCameraModeChanged;
+        }
+    }
+
+    void OnCameraModeChanged(SphereFieldCameraController.CameraMode mode)
+    {
+        if (window != null)
+        {
+            window.Visible = mode != SphereFieldCameraController.CameraMode.Free;
+        }
     }
 }

@@ -10,6 +10,7 @@ namespace ParamsUI.UITK
     public sealed class ParamWindow : MonoBehaviour
     {
         [SerializeField] UIDocument _uiDocument;
+        bool _isVisible = true;
         public ParamCatalog Catalog { get; set; }
 
         readonly List<IControlBuilder> _builders = new();
@@ -30,15 +31,24 @@ namespace ParamsUI.UITK
 
         CommandDef FindCommandByKey(string key) => Catalog?.AllCommands.FirstOrDefault(c => c.Key == key);
 
-        void OnEnable() => Rebuild();
+        void OnEnable()
+        {
+            Rebuild();
+            ApplyVisibility();
+        }
 
         public void Rebuild()
         {
             var root = _uiDocument.rootVisualElement;
             root.Clear();
-            if (Catalog == null) return;
+            if (Catalog == null)
+            {
+                ApplyVisibility();
+                return;
+            }
 
             ApplyStyles(root); // <- ver abajo
+            ApplyVisibility();
 
             // Header
             var header = new VisualElement();
@@ -193,6 +203,25 @@ namespace ParamsUI.UITK
         void ResetVisible(VisualElement _)
         {
             // TODO: restaurar valores por defecto si guardas DefaultValue en ParamMeta
+        }
+
+        public bool Visible
+        {
+            get => _isVisible;
+            set
+            {
+                if (_isVisible == value) return;
+                _isVisible = value;
+                ApplyVisibility();
+            }
+        }
+
+        void ApplyVisibility()
+        {
+            if (_uiDocument == null) return;
+            var root = _uiDocument.rootVisualElement;
+            if (root == null) return;
+            root.style.display = _isVisible ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
 }

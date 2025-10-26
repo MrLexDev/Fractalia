@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -8,6 +9,8 @@ public class SphereFieldCameraController : MonoBehaviour
         Free,
         Orbit
     }
+
+    public event Action<CameraMode> ModeChanged;
     
     private static readonly int CamPos = Shader.PropertyToID("cam_pos");
     private static readonly int CamForward = Shader.PropertyToID("cam_forward");
@@ -54,10 +57,12 @@ public class SphereFieldCameraController : MonoBehaviour
         Vector3 angles = mainCamera!.transform.eulerAngles;
         _yaw = angles.y;
         _pitch = angles.x;
-        
+
 
         //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
+
+        ApplyCursorSettings();
 
         if (!rayMarchMaterial)
         {
@@ -78,6 +83,11 @@ public class SphereFieldCameraController : MonoBehaviour
 
     private void Update()
     {
+        if (cameraMode == CameraMode.Free && Input.GetKeyDown(KeyCode.Escape))
+        {
+            Mode = CameraMode.Orbit;
+        }
+
         if (cameraMode == CameraMode.Free)
         {
             HandleMovement();
@@ -198,6 +208,8 @@ public class SphereFieldCameraController : MonoBehaviour
 
             cameraMode = value;
 
+            ApplyCursorSettings();
+
             if (cameraMode == CameraMode.Free)
             {
                 Vector3 angles = mainCamera.transform.eulerAngles;
@@ -214,6 +226,8 @@ public class SphereFieldCameraController : MonoBehaviour
                     _orbitAngle = Mathf.Atan2(toCamera.z, toCamera.x) * Mathf.Rad2Deg;
                 }
             }
+
+            ModeChanged?.Invoke(cameraMode);
         }
     }
 
@@ -239,5 +253,19 @@ public class SphereFieldCameraController : MonoBehaviour
     {
         get => orbitCenter;
         set => orbitCenter = value;
+    }
+
+    private void ApplyCursorSettings()
+    {
+        if (cameraMode == CameraMode.Free)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 }
