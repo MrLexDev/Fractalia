@@ -1,78 +1,63 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-#if RENDER_GRAPH_ENABLED
-using UnityEngine.Rendering.RenderGraphModule;
-using UnityEngine.Rendering.RenderGraphModule.Util;
-#endif
 
 public class FullScreenTriPass : ScriptableRenderPass
 {
-    private Material material;
-    private int shaderPassIndex;
-    private RTHandle colorTargetHandle;
+    private readonly Material _material;
+    private readonly int _shaderPassIndex;
+
+    private RTHandle _cameraColor;
+    private RTHandle _tmpColor; // RT temporal para evitar in-place
 
     public FullScreenTriPass(Material mat, int passIndex)
     {
-        material = mat;
-        shaderPassIndex = passIndex;
+        _material = mat;
+        _shaderPassIndex = passIndex;
         renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
     }
 
-    // This method is unused, dont know why is here
     public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
     {
-#if !RENDER_GRAPH_ENABLED
+        // Pide la textura de color de cámara (URP hará el CopyColor si es necesario)
         ConfigureInput(ScriptableRenderPassInput.Color);
-        colorTargetHandle = renderingData.cameraData.renderer.cameraColorTargetHandle;
-#endif
-    }
-    
-#if RENDER_GRAPH_ENABLED
-    public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
-    {
-        var resourceData = frameData.Get<UniversalResourceData>();
-        var cameraData = frameData.Get<UniversalCameraData>();
-        
-        if (resourceData.isActiveTargetBackBuffer)
-            return;
 
-        // Configurar descriptor con dimensiones de la cámara
-        RenderTextureDescriptor desc = cameraData.cameraTargetDescriptor;
+        _cameraColor = renderingData.cameraData.renderer.cameraColorTargetHandle;
+
+        // Descriptor del target de cámara, sin profundidad para el temporal
+        var desc = renderingData.cameraData.cameraTargetDescriptor;
         desc.depthBufferBits = 0;
 
-        // Crear textura en RenderGraph
-        TextureHandle dst = UniversalRenderer.CreateRenderGraphTexture(renderGraph, desc, "FullScreenTriPassTarget", false);
-
-        TextureHandle src = resourceData.activeColorTexture;
-        if (!src.IsValid() || !dst.IsValid())
-            return;
-
-        // Registrar pase de blit completo
-        RenderGraphUtils.BlitMaterialParameters blitParams = new RenderGraphUtils.BlitMaterialParameters(dst, src, material, shaderPassIndex);
-        renderGraph.AddBlitPass(blitParams, "FullScreenTriPassBlit");
+        // Crea/Reasigna el RT temporal
+        RenderingUtils.ReAllocateIfNeeded(
+            ref _tmpColor, desc,
+            FilterMode.Bilinear, TextureWrapMode.Clamp,
+            name: "_FullScreenTriTmp"
+        );
     }
-#endif
 
     public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
     {
-#if !RENDER_GRAPH_ENABLED
-        if (material == null)
-            return;
+        if (_material == null) return;
 
-        CommandBuffer cmd = CommandBufferPool.Get("FullScreenTriPass");
-        var src = colorTargetHandle;
-        if (src == null)
-        {
-            CommandBufferPool.Release(cmd);
-            return;
-        }
-        Blit(cmd, src, src, material, shaderPassIndex);
+        // Muy importante: RTHandle puede no ser null, pero no tener textura real.
+        if (_cameraColor == null || _cameraColor.rt == null) return;
+        if (_tmpColor == null || _tmpColor.rt == null) return;
+
+        var cmd = CommandBufferPool.Get("FullScreenTriPass");
+
+        // src -> tmp (aplicando tu material)
+        Blit(cmd, _cameraColor, _tmpColor, _material, _shaderPassIndex);
+        // tmp -> src
+        Blit(cmd, _tmpColor, _cameraColor);
+
         context.ExecuteCommandBuffer(cmd);
         CommandBufferPool.Release(cmd);
-#endif
     }
+
     public override void OnCameraCleanup(CommandBuffer cmd)
     {
+        // No liberar _cameraColor: lo gestiona el renderer.
+        _tmpColor?.Release();
     }
 }
