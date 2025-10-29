@@ -223,28 +223,59 @@ namespace ParamsUI.UITK
         public VisualElement Build(IParam p)
         {
             var info = GetInfoOrThrow(p.ValueType);
-            var row  = new VisualElement { style = { flexDirection = FlexDirection.Row } };
+            bool useSliders = p.Meta.VectorSlider != null;
+
+            var row = new VisualElement
+            {
+                style =
+                {
+                    flexDirection = FlexDirection.Row,
+                    alignItems = Align.Center
+                }
+            };
+
             row.Add(new Label(p.Label) { style = { minWidth = 140 } });
 
-            // Cajas numéricas
-            var (xF, yF, zF, wF) = (new FloatField(), new FloatField(), new FloatField(), new FloatField());
-            xF.style.flexGrow = yF.style.flexGrow = zF.style.flexGrow = wF.style.flexGrow = 1;
+            var container = new VisualElement
+            {
+                style =
+                {
+                    flexDirection = FlexDirection.Row,
+                    flexGrow = 1,
+                    alignItems = Align.Center
+                }
+            };
 
-            // Valores iniciales
             var (x, y, z, w) = info.Getter(p.GetBoxed());
-            xF.value = x; yF.value = y;
-            if (info.Dim >= 3) zF.value = z;
-            if (info.Dim == 4) wF.value = w;
+            var labels = p.Meta.VectorSlider?.Labels;
+            if (labels == null && p.ValueType == typeof(Color))
+                labels = new[] { "R", "G", "B", "A" };
 
-            // Layout: añade solo las que correspondan
-            row.Add(xF); row.Add(yF);
-            if (info.Dim >= 3) row.Add(zF);
-            if (info.Dim == 4) row.Add(wF);
+            VisualElement xControl = CreateComponent(0, x, useSliders, p.Meta.VectorSlider, labels);
+            VisualElement yControl = CreateComponent(1, y, useSliders, p.Meta.VectorSlider, labels);
+            VisualElement zControl = null;
+            VisualElement wControl = null;
 
-            if (!string.IsNullOrEmpty(p.Meta.Tooltip)) row.tooltip = p.Meta.Tooltip;
+            container.Add(xControl);
+            container.Add(yControl);
 
-            // Guarda refs en userData para el Bind
-            row.userData = new VecFields(info, xF, yF, zF, wF);
+            if (info.Dim >= 3)
+            {
+                zControl = CreateComponent(2, z, useSliders, p.Meta.VectorSlider, labels);
+                container.Add(zControl);
+            }
+
+            if (info.Dim == 4)
+            {
+                wControl = CreateComponent(3, w, useSliders, p.Meta.VectorSlider, labels);
+                container.Add(wControl);
+            }
+
+            if (!string.IsNullOrEmpty(p.Meta.Tooltip))
+                row.tooltip = p.Meta.Tooltip;
+
+            row.Add(container);
+            row.userData = new VecFields(info, xControl, yControl, zControl, wControl, p.Meta.VectorSlider);
             return row;
         }
 
@@ -253,31 +284,40 @@ namespace ParamsUI.UITK
             var vf = (VecFields)ve.userData;
             bool updating = false;
 
-            Action push = () =>
+            void Push()
             {
                 if (updating) return;
+
                 var obj = vf.Info.Setter(
-                    vf.X.value,
-                    vf.Y.value,
-                    vf.Info.Dim >= 3 ? vf.Z.value : 0f,
-                    vf.Info.Dim == 4 ? vf.W.value : 0f
+                    ReadValue(vf.X),
+                    ReadValue(vf.Y),
+                    vf.Info.Dim >= 3 ? ReadValue(vf.Z) : 0f,
+                    vf.Info.Dim == 4 ? ReadValue(vf.W) : 0f
                 );
                 p.SetBoxed(obj);
-            };
+            }
 
-            vf.X.RegisterValueChangedCallback(_ => push());
-            vf.Y.RegisterValueChangedCallback(_ => push());
-            if (vf.Info.Dim >= 3) vf.Z.RegisterValueChangedCallback(_ => push());
-            if (vf.Info.Dim == 4) vf.W.RegisterValueChangedCallback(_ => push());
+            RegisterComponent(vf.X, vf.Slider, () =>
+            {
+                if (!updating) Push();
+            });
+            RegisterComponent(vf.Y, vf.Slider, () =>
+            {
+                if (!updating) Push();
+            });
+            if (vf.Info.Dim >= 3)
+                RegisterComponent(vf.Z, vf.Slider, () => { if (!updating) Push(); });
+            if (vf.Info.Dim == 4)
+                RegisterComponent(vf.W, vf.Slider, () => { if (!updating) Push(); });
 
             p.Changed += _ =>
             {
                 updating = true;
                 var (x, y, z, w) = vf.Info.Getter(p.GetBoxed());
-                vf.X.SetValueWithoutNotify(x);
-                vf.Y.SetValueWithoutNotify(y);
-                if (vf.Info.Dim >= 3) vf.Z.SetValueWithoutNotify(z);
-                if (vf.Info.Dim == 4) vf.W.SetValueWithoutNotify(w);
+                WriteValue(vf.X, vf.Slider, x);
+                WriteValue(vf.Y, vf.Slider, y);
+                if (vf.Info.Dim >= 3) WriteValue(vf.Z, vf.Slider, z);
+                if (vf.Info.Dim == 4) WriteValue(vf.W, vf.Slider, w);
                 updating = false;
             };
         }
@@ -292,9 +332,133 @@ namespace ParamsUI.UITK
 
         sealed class VecFields
         {
-            public VecInfo Info; public FloatField X, Y, Z, W;
-            public VecFields(VecInfo info, FloatField x, FloatField y, FloatField z, FloatField w)
-            { Info = info; X = x; Y = y; Z = z; W = w; }
+            public VecInfo Info;
+            public VisualElement X, Y, Z, W;
+            public ParamMeta.VectorSliderSettings Slider;
+
+            public VecFields(VecInfo info, VisualElement x, VisualElement y, VisualElement z, VisualElement w, ParamMeta.VectorSliderSettings slider)
+            {
+                Info = info;
+                X = x;
+                Y = y;
+                Z = z;
+                W = w;
+                Slider = slider;
+            }
+        }
+
+        static VisualElement CreateComponent(int index, float value, bool useSlider, ParamMeta.VectorSliderSettings settings, string[] labels)
+        {
+            if (useSlider && settings != null)
+            {
+                return CreateSlider(GetAxisLabel(labels, index), value, settings, index == 0);
+            }
+
+            return CreateField(value, index == 0);
+        }
+
+        static FloatField CreateField(float value, bool isFirst)
+        {
+            var field = new FloatField { value = value };
+            field.style.flexGrow = 1;
+            if (!isFirst)
+                field.style.marginLeft = 4;
+            return field;
+        }
+
+        static Slider CreateSlider(string label, float value, ParamMeta.VectorSliderSettings settings, bool isFirst)
+        {
+            float min = (float)settings.Min;
+            float max = (float)settings.Max;
+            var slider = new Slider(label, min, max)
+            {
+                showInputField = false
+            };
+
+            slider.value = SnapToSlider(value, settings, min, max);
+            slider.style.flexGrow = 1;
+            if (!isFirst)
+                slider.style.marginLeft = 6;
+            slider.labelElement.style.minWidth = 18;
+            slider.labelElement.style.unityTextAlign = TextAnchor.MiddleCenter;
+            slider.labelElement.style.alignSelf = Align.Center;
+            slider.labelElement.style.marginRight = 4;
+            return slider;
+        }
+
+        static string GetAxisLabel(string[] labels, int index)
+        {
+            if (labels != null && index < labels.Length && !string.IsNullOrEmpty(labels[index]))
+                return labels[index];
+
+            return index switch
+            {
+                0 => "X",
+                1 => "Y",
+                2 => "Z",
+                3 => "W",
+                _ => string.Empty
+            };
+        }
+
+        static void RegisterComponent(VisualElement element, ParamMeta.VectorSliderSettings settings, Action push)
+        {
+            if (element == null) return;
+
+            switch (element)
+            {
+                case Slider slider:
+                    slider.RegisterValueChangedCallback(evt =>
+                    {
+                        float min = slider.lowValue;
+                        float max = slider.highValue;
+                        float snapped = settings != null ? SnapToSlider(evt.newValue, settings, min, max) : Mathf.Clamp(evt.newValue, min, max);
+                        if (!Mathf.Approximately(snapped, evt.newValue))
+                            slider.SetValueWithoutNotify(snapped);
+                        push();
+                    });
+                    break;
+                case FloatField field:
+                    field.RegisterValueChangedCallback(_ => push());
+                    break;
+            }
+        }
+
+        static float ReadValue(VisualElement element)
+        {
+            return element switch
+            {
+                Slider slider => slider.value,
+                FloatField field => field.value,
+                _ => 0f
+            };
+        }
+
+        static void WriteValue(VisualElement element, ParamMeta.VectorSliderSettings settings, float value)
+        {
+            switch (element)
+            {
+                case Slider slider:
+                    float min = slider.lowValue;
+                    float max = slider.highValue;
+                    slider.SetValueWithoutNotify(settings != null ? SnapToSlider(value, settings, min, max) : Mathf.Clamp(value, min, max));
+                    break;
+                case FloatField field:
+                    field.SetValueWithoutNotify(value);
+                    break;
+            }
+        }
+
+        static float SnapToSlider(float value, ParamMeta.VectorSliderSettings settings, float min, float max)
+        {
+            float clamped = Mathf.Clamp(value, min, max);
+            if (settings?.Step is double stepD && stepD > 0)
+            {
+                float step = (float)stepD;
+                clamped = min + Mathf.Round((clamped - min) / step) * step;
+                clamped = Mathf.Clamp(clamped, min, max);
+            }
+            return clamped;
         }
 
         static bool TryGetInfo(Type t, out VecInfo info)
@@ -324,6 +488,40 @@ namespace ParamsUI.UITK
                     Dim = 4,
                     Getter = o => { var v = (UnityEngine.Vector4)o; return (v.x, v.y, v.z, v.w); },
                     Setter = (x,y,z,w) => new UnityEngine.Vector4(x,y,z,w)
+                };
+                return true;
+            }
+
+            if (t == typeof(UnityEngine.Color))
+            {
+                info = new VecInfo
+                {
+                    Dim = 4,
+                    Getter = o =>
+                    {
+                        var v = (UnityEngine.Color)o;
+                        return (v.r, v.g, v.b, v.a);
+                    },
+                    Setter = (x, y, z, w) => new UnityEngine.Color(x, y, z, w)
+                };
+                return true;
+            }
+
+            if (t == typeof(UnityEngine.Color32))
+            {
+                info = new VecInfo
+                {
+                    Dim = 4,
+                    Getter = o =>
+                    {
+                        var v = (UnityEngine.Color32)o;
+                        return (v.r / 255f, v.g / 255f, v.b / 255f, v.a / 255f);
+                    },
+                    Setter = (x, y, z, w) => new UnityEngine.Color32(
+                        (byte)Mathf.Clamp(Mathf.RoundToInt(x * 255f), 0, 255),
+                        (byte)Mathf.Clamp(Mathf.RoundToInt(y * 255f), 0, 255),
+                        (byte)Mathf.Clamp(Mathf.RoundToInt(z * 255f), 0, 255),
+                        (byte)Mathf.Clamp(Mathf.RoundToInt(w * 255f), 0, 255))
                 };
                 return true;
             }

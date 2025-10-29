@@ -89,35 +89,46 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
             .WithMeta(ParamMeta.Range(0, 12, 0.1)));
 
         // ── Luz / Orbit ───────────────────────────────────────────────────
+        var lightSliderMeta = new ParamMeta()
+            .WithVectorSlider(-1, 1, 0.01, "X", "Y", "Z");
+
         cat.Add(new ParamDef<Vector3>("light_direction", "Light Dir (xyz)",
             () => binder.GetVector("light_direction"),
             v  => binder.SetVector("light_direction", v))
-            .InGroup("Lighting"));
+            .InGroup("Lighting")
+            .WithMeta(lightSliderMeta));
+
+        var colorSliderMeta = new ParamMeta().WithColorSlider(0, 1, 0.01);
 
         cat.Add(new ParamDef<Color>("base_color", "Base Color",
             () => binder.GetColor("base_color"),
             v  => binder.SetColor("base_color", v))
-            .InGroup("Look"));
+            .InGroup("Look")
+            .WithMeta(colorSliderMeta));
 
         cat.Add(new ParamDef<Color>("orbit_color_0", "Orbit Color 0",
             () => binder.GetColor("orbit_color_0"),
             v  => binder.SetColor("orbit_color_0", v))
-            .InGroup("Look"));
+            .InGroup("Look")
+            .WithMeta(colorSliderMeta));
 
         cat.Add(new ParamDef<Color>("orbit_color_1", "Orbit Color 1",
             () => binder.GetColor("orbit_color_1"),
             v  => binder.SetColor("orbit_color_1", v))
-            .InGroup("Look"));
+            .InGroup("Look")
+            .WithMeta(colorSliderMeta));
 
         cat.Add(new ParamDef<Color>("orbit_color_2", "Orbit Color 2",
             () => binder.GetColor("orbit_color_2"),
             v  => binder.SetColor("orbit_color_2", v))
-            .InGroup("Look"));
+            .InGroup("Look")
+            .WithMeta(colorSliderMeta));
 
         cat.Add(new ParamDef<Color>("orbit_color_3", "Orbit Color 3",
             () => binder.GetColor("orbit_color_3"),
             v  => binder.SetColor("orbit_color_3", v))
-            .InGroup("Look"));
+            .InGroup("Look")
+            .WithMeta(colorSliderMeta));
 
         cat.Add(new ParamDef<Vector4>("orbit_thresholds", "Orbit Thresholds",
             () => binder.GetVector("orbit_thresholds"),

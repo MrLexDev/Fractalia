@@ -76,6 +76,9 @@ namespace ParamsUI
         public double? Max { get; set; }
         public double? Step { get; set; }
 
+        // Configuración específica para vectores (slider por componente)
+        public VectorSliderSettings VectorSlider { get; set; }
+
         // Opciones (enum o listas)
         public IReadOnlyList<(string label, object value)> Options { get; set; }
 
@@ -86,6 +89,35 @@ namespace ParamsUI
 
         public static ParamMeta Range(double min, double max, double? step = null, string unit = null) =>
             new ParamMeta { Min = min, Max = max, Step = step, Unit = unit };
+
+        public ParamMeta WithVectorSlider(double min, double max, double? step = null, params string[] labels)
+        {
+            if (ReferenceEquals(this, Default))
+            {
+                var meta = new ParamMeta();
+                return meta.WithVectorSlider(min, max, step, labels);
+            }
+
+            VectorSlider = new VectorSliderSettings
+            {
+                Min = min,
+                Max = max,
+                Step = step,
+                Labels = labels != null && labels.Length > 0 ? labels : null
+            };
+            return this;
+        }
+
+        public ParamMeta WithColorSlider(double min = 0.0, double max = 1.0, double? step = 0.01)
+            => WithVectorSlider(min, max, step, "R", "G", "B", "A");
+
+        public sealed class VectorSliderSettings
+        {
+            public double Min { get; set; }
+            public double Max { get; set; }
+            public double? Step { get; set; }
+            public string[] Labels { get; set; }
+        }
     }
 
     public sealed class CommandDef
