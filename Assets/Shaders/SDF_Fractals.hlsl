@@ -154,6 +154,15 @@ fractal_output sdf_sierpinski(float3 p)
 
 fractal_output fractal_signed_distance(float3 position)
 {
+    if (fractal_type == 1)
+    {
+        return sdf_mandelbox(position);
+    }
+    else if (fractal_type == 2)
+    {
+        return sdf_sierpinski(position);
+    }
+
     return sdf_mandelbulb(position);
 }
 

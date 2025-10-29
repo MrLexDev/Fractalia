@@ -24,10 +24,11 @@ Shader "Custom/RayMarchRenderer"
         MB_MIN_RADIUS       ("MB_MIN_RADIUS",       Float)    = 0.5
         MB_FIXED_RADIUS     ("MB_FIXED_RADIUS",     Float)    = 1
         MB_BOX_LIMIT        ("MB_BOX_LIMIT",        Float)    = 1
-        
+
         iterations          ("Iterations",          Int)    = 10
         power               ("Power",               Float)  = 4.0
-        
+        fractal_type        ("Fractal Type",        Int)    = 0
+
         light_direction     ("Light Direction",     Vector) = (0, 0, 0)
 
         orbit_color_0       ("Orbit Color 0",       Color)  = (0.2, 0.2, 0.8, 1)

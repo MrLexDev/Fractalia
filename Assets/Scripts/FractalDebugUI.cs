@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class FractalDebugUI : MonoBehaviour
@@ -5,6 +6,9 @@ public class FractalDebugUI : MonoBehaviour
     private static readonly int LightDirId = Shader.PropertyToID("light_direction");
     private static readonly int MaxStepsId = Shader.PropertyToID("max_steps");
     private static readonly int BaseColorId = Shader.PropertyToID("base_color");
+    private static readonly int FractalTypeId = Shader.PropertyToID("fractal_type");
+
+    private static readonly string[] FractalNames = Enum.GetNames(typeof(FractalType));
 
     [Header("References")]
     public SphereFieldCameraController controller;
@@ -19,6 +23,7 @@ public class FractalDebugUI : MonoBehaviour
     private Vector3 _lightDirection;
     private int _maxSteps;
     private Color _baseColor;
+    private int _selectedFractalIndex;
 
     private void Start()
     {
@@ -33,6 +38,7 @@ public class FractalDebugUI : MonoBehaviour
             _lightDirection = new Vector3(ld.x, ld.y, ld.z);
             _maxSteps = rayMarchMaterial.GetInt(MaxStepsId);
             _baseColor = rayMarchMaterial.GetColor(BaseColorId);
+            _selectedFractalIndex = Mathf.Clamp(rayMarchMaterial.GetInt(FractalTypeId), 0, FractalNames.Length - 1);
         }
         // create line renderer for center line
         _lineRenderer = new GameObject("CenterDebugLine").AddComponent<LineRenderer>();
@@ -78,12 +84,21 @@ public class FractalDebugUI : MonoBehaviour
     {
         if (!showUI || !rayMarchMaterial) return;
 
-        GUILayout.BeginArea(new Rect(10, 10, 300, 250), GUI.skin.box);
+        GUILayout.BeginArea(new Rect(10, 10, 300, 320), GUI.skin.box);
 
         if (controller && controller.mainCamera)
         {
             Vector3 pos = controller.mainCamera.transform.position;
             GUILayout.Label($"Camera Pos: {pos}");
+        }
+
+        _selectedFractalIndex = Mathf.Clamp(rayMarchMaterial.GetInt(FractalTypeId), 0, FractalNames.Length - 1);
+        GUILayout.Label("Fractal Type");
+        int selected = GUILayout.SelectionGrid(_selectedFractalIndex, FractalNames, 1);
+        if (selected != _selectedFractalIndex)
+        {
+            _selectedFractalIndex = selected;
+            rayMarchMaterial.SetInt(FractalTypeId, _selectedFractalIndex);
         }
 
         GUILayout.Label($"Max Steps: {_maxSteps}");
