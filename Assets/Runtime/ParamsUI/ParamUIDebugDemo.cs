@@ -130,21 +130,27 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
             .InGroup("Look")
             .WithMeta(colorSliderMeta));
 
+        var orbitSliderMeta = new ParamMeta()
+            .WithVectorSlider(0, 1, 0.01, "X", "Y", "Z");
+        
         cat.Add(new ParamDef<Vector4>("orbit_thresholds", "Orbit Thresholds",
             () => binder.GetVector("orbit_thresholds"),
             v  => binder.SetVector("orbit_thresholds", v))
-            .InGroup("Look"));
+            .InGroup("Look")
+            .WithMeta(orbitSliderMeta));
 
         cat.Add(new ParamDef<float>("orbit_scale", "Orbit Scale",
             () => binder.GetFloat("orbit_scale"),
             v  => binder.SetFloat("orbit_scale", v))
-            .InGroup("Look"));
+            .InGroup("Look")
+            .WithMeta(ParamMeta.Range(0, 3, 0.1)));
 
         // ── AO / Debug ────────────────────────────────────────────────────
         cat.Add(new ParamDef<float>("ao_brightness", "AO Brightness",
             () => binder.GetFloat("ao_brightness"),
             v  => binder.SetFloat("ao_brightness", Mathf.Max(0f, v)))
-            .InGroup("Shading"));
+            .InGroup("Shading")
+            .WithMeta(ParamMeta.Range(0, 30, 0.1)));
 
         window.Catalog = cat;
         window.Rebuild();

@@ -51,6 +51,7 @@ namespace ParamsUI.UITK
             ApplyVisibility();
 
             // Header
+            /*
             var header = new VisualElement();
             header.AddToClassList("params-header");
             var search = new TextField { label = "Search" };
@@ -60,7 +61,7 @@ namespace ParamsUI.UITK
             header.Add(search);
             header.Add(reset);
             root.Add(header);
-
+*/
             // Tabs (Toolbar) + Pages
             var tabsBar = new Toolbar();
             tabsBar.AddToClassList("params-tabs");
@@ -148,6 +149,7 @@ namespace ParamsUI.UITK
             }
 
             // Búsqueda: filtra solo en la página activa
+            /*
             search.RegisterValueChangedCallback(evt =>
             {
                 var q = (evt.newValue ?? "").Trim();
@@ -160,7 +162,7 @@ namespace ParamsUI.UITK
                     bool match = string.IsNullOrEmpty(q) || (label?.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0);
                     child.style.display = match ? DisplayStyle.Flex : DisplayStyle.None;
                 }
-            });
+            });*/
         }
 
         // Helpers ------------------------------------------------------------

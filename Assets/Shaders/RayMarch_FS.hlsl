@@ -7,10 +7,14 @@
 #include "SDF_Lighting.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
+TEXTURE2D_X(_BlitTexture);
+SAMPLER(sampler_BlitTexture);
+
 
 float4 fragment_render_fractal(vertex_output IN) : SV_Target
 {
-    float2 uv01 = IN.uv;
+    float2 uv    = IN.uv;
+    float2 uv01  = uv;
     float2 screen_pos = uv01 * 2.0 - 1.0;
 
         float  aspect = _ScreenParams.x / _ScreenParams.y;
@@ -30,13 +34,15 @@ float4 fragment_render_fractal(vertex_output IN) : SV_Target
     {
         return float4(hit.ray_steps / (float)max_steps, 0, 0, 1);
     }
+    float4 backgroundColor = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_BlitTexture, uv01);
+
     if (hit.ray_march_distance >= max_ray_distance)
     {
-        return float4(0, 0, 0, 0);
+        return backgroundColor;
     }
-    
+
     float4 final_color = light_effects(ray_origin, ray_dir, hit);
-    
+
     return final_color;
 }
 #endif // RAYMARCH_FS_INCLUDED
