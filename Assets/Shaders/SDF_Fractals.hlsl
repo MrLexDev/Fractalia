@@ -9,6 +9,10 @@ struct fractal_output {
     float orbit_min_dist;
 };
 
+static const int   MENGER_ITERATIONS    = 10;
+//static const float3 JULIA_CONSTANT      = float3(-0.745, 0.113, 0.274);
+static const float  JULIA_MIN_RADIUS    = 1e-6;
+
 // ------------------------------------------------------------
 // 1) Función SDF del fractal (Mandelbulb 3D)
 // ------------------------------------------------------------
@@ -54,6 +58,80 @@ fractal_output sdf_mandelbulb(float3 position)
     }
 
     result.sdf_distance = 0.5 * log(radius) * radius / radius_derivative;
+    result.orbit_min_dist = orbit_min;
+    return result;
+}
+
+float sd_cross(float3 p, float b)
+{
+    float3 q = abs(p);
+    return min(min(max(q.x, q.y), max(q.y, q.z)), max(q.z, q.x)) - b;
+}
+
+fractal_output sdf_menger_sponge(float3 position)
+{
+    fractal_output result = {0.0, 0.0, 0.0, 1e20};
+
+    float distance = sd_cross(position, 1.0);
+    float scale = 1.0;
+    float orbit_min = length(position);
+
+    for (int i = 0; i < MENGER_ITERATIONS; ++i)
+    {
+        float3 scaled = position * scale;
+        float3 cell = frac(scaled * 0.5 + 0.5) * 2.0 - 1.0;
+        scale *= 3.0;
+
+        float3 r = abs(1.0 - 3.0 * abs(cell));
+        float c = (min(min(r.x, r.y), r.z) - 1.0) / scale;
+        distance = max(distance, c);
+
+        orbit_min = min(orbit_min, length(cell));
+    }
+
+    result.sdf_distance = distance;
+    result.orbit_min_dist = orbit_min;
+    return result;
+}
+
+fractal_output sdf_quaternion_julia(float3 position)
+{
+    fractal_output result = {0.0, 0.0, 0.0, 1e20};
+    float3 z = position;
+    float radius = length(z);
+    float derivative = 1.0;
+    float orbit_min = radius;
+
+    for (int i = 0; i < iterations; ++i)
+    {
+        radius = length(z);
+        orbit_min = min(orbit_min, radius);
+        if (radius > bailout)
+        {
+            break;
+        }
+
+        float safe_radius = max(radius, JULIA_MIN_RADIUS);
+        derivative = 2.0 * derivative * safe_radius;
+
+        float x = z.x;
+        float y = z.y;
+        float zVal = z.z;
+
+        float x2 = x * x;
+        float y2 = y * y;
+        float z2 = zVal * zVal;
+
+        float newX = x2 - y2 - z2 + julia_constant.x;
+        float newY = 2.0 * x * y + julia_constant.y;
+        float newZ = 2.0 * x * zVal + julia_constant.z;
+
+        z = float3(newX, newY, newZ);
+    }
+
+    float safe_radius_final = max(radius, JULIA_MIN_RADIUS);
+    float safe_derivative = max(derivative, JULIA_MIN_RADIUS);
+    result.sdf_distance = 0.5 * log(safe_radius_final) * safe_radius_final / safe_derivative;
     result.orbit_min_dist = orbit_min;
     return result;
 }
@@ -119,7 +197,7 @@ fractal_output sdf_mandelbox(float3 position)
 // -----------------------------------------------------------------------
 // SDF para una Pirámide de Sierpinski (Tetraedro de Sierpinski)
 // -----------------------------------------------------------------------
-static const int   SIERPINSKI_ITERATIONS = 5;
+static const int   SIERPINSKI_ITERATIONS = 15;
 static const float SIERPINSKI_SCALE      = 2.0;
 static const float3 SIERPINSKI_OFFSET_VEC = float3(1.0, 1.0, 1.0);
 
@@ -161,6 +239,14 @@ fractal_output fractal_signed_distance(float3 position)
     else if (fractal_type == 2)
     {
         return sdf_sierpinski(position);
+    }
+    else if (fractal_type == 3)
+    {
+        return sdf_menger_sponge(position);
+    }
+    else if (fractal_type == 4)
+    {
+        return sdf_quaternion_julia(position);
     }
 
     return sdf_mandelbulb(position);

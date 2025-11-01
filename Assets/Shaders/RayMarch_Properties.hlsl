@@ -29,6 +29,8 @@ CBUFFER_START(RaymarchProps)
         float MB_FIXED_RADIUS= 1.0;     // Radio fijo para el sphere-fold
         float MB_BOX_LIMIT   = 1.0;     // Límite de box-fold en cada eje (±1.0)
 
+        float3 julia_constant = float3(-0.745, 0.113, 0.274);
+
         // Parámetros del fractal
         int    iterations;
         float  power;

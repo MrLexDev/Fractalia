@@ -63,30 +63,37 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
             v  => binder.SetInt("fractal_type", (int)v))
             .InGroup("Fractal"));
 
-        cat.Add(new ParamDef<float>("power", "Power",
+        cat.Add(new ParamDef<float>("power", "Mandelbulb Power",
             () => binder.GetFloat("power"),
             v  => binder.SetFloat("power", Mathf.Clamp(v, -12f, 12f)))
             .InGroup("Fractal")
             .WithMeta(ParamMeta.Range(-12, 12, 0.1)));
 
         // ── Mandelbulb params (MB_*) ──────────────────────────────────────
-        cat.Add(new ParamDef<float>("MB_MIN_RADIUS", "MB Min Radius",
+        cat.Add(new ParamDef<float>("MB_MIN_RADIUS", "Mandel Box Min Radius",
             () => binder.GetFloat("MB_MIN_RADIUS"),
             v  => binder.SetFloat("MB_MIN_RADIUS", Mathf.Max(0f, v)))
             .InGroup("Fractal")
             .WithMeta(ParamMeta.Range(0, 12, 0.1)));
 
-        cat.Add(new ParamDef<float>("MB_FIXED_RADIUS", "MB Fixed Radius",
+        cat.Add(new ParamDef<float>("MB_FIXED_RADIUS", "Mandel Box Fixed Radius",
             () => binder.GetFloat("MB_FIXED_RADIUS"),
             v  => binder.SetFloat("MB_FIXED_RADIUS", Mathf.Max(0f, v)))
             .InGroup("Fractal")
             .WithMeta(ParamMeta.Range(0, 12, 0.1)));
 
-        cat.Add(new ParamDef<float>("MB_BOX_LIMIT", "MB Box Limit",
+        cat.Add(new ParamDef<float>("MB_BOX_LIMIT", "Mandel Box Box Limit",
             () => binder.GetFloat("MB_BOX_LIMIT"),
             v  => binder.SetFloat("MB_BOX_LIMIT", Mathf.Max(0f, v)))
             .InGroup("Fractal")
             .WithMeta(ParamMeta.Range(0, 12, 0.1)));
+        
+        cat.Add(new ParamDef<Vector3>("julia_constant", "Julia Constant (xyz)",
+                () => binder.GetVector("julia_constant"),
+                v  => binder.SetVector("julia_constant", v))
+            .InGroup("Fractal")
+            .WithMeta(new ParamMeta()
+                .WithVectorSlider(-1.5, 1.5, 0.01, "X", "Y", "Z")));
 
         // ── Luz / Orbit ───────────────────────────────────────────────────
         var lightSliderMeta = new ParamMeta()
@@ -149,7 +156,7 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
         cat.Add(new ParamDef<float>("ao_brightness", "AO Brightness",
             () => binder.GetFloat("ao_brightness"),
             v  => binder.SetFloat("ao_brightness", Mathf.Max(0f, v)))
-            .InGroup("Shading")
+            .InGroup("Lighting")
             .WithMeta(ParamMeta.Range(0, 30, 0.1)));
 
         window.Catalog = cat;
