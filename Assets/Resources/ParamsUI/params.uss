@@ -48,6 +48,8 @@
 
 /* Tabs arriba, finos */
 .params-tabs {
+    display: flex;
+    flex-direction: row;
     height: 30px;
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -62,9 +64,17 @@
     border-radius: 6px;
     -unity-font-style: normal;
     font-size: 11px;
+    align-items: center;
 }
 .params-tab:checked {
     background-color: #1b2130;
+}
+.params-tab .unity-toggle__input,
+.params-tab .unity-toggle__checkmark {
+    display: none;
+}
+.params-tab .unity-toggle__label {
+    padding: 0;
 }
 
 /* Páginas */

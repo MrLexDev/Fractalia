@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -63,7 +62,7 @@ namespace ParamsUI.UITK
             root.Add(header);
 */
             // Tabs (Toolbar) + Pages
-            var tabsBar = new Toolbar();
+            var tabsBar = new VisualElement();
             tabsBar.AddToClassList("params-tabs");
             var pages = new VisualElement();
             pages.AddToClassList("params-pages");
@@ -77,16 +76,15 @@ namespace ParamsUI.UITK
                 .OrderBy(g => g.Key);
 
             var pageByKey = new Dictionary<string, VisualElement>();
-            var toggles = new List<ToolbarToggle>();
+            var tabs = new List<TabButton>();
 
             foreach (var g in groups)
             {
                 string key = string.IsNullOrWhiteSpace(g.Key) ? "(Root)" : g.Key;
 
                 // Pestaña
-                var tab = new ToolbarToggle { text = key };
-                tab.AddToClassList("params-tab");
-                toggles.Add(tab);
+                var tab = new TabButton(key);
+                tabs.Add(tab);
                 tabsBar.Add(tab);
 
                 // Página
@@ -133,19 +131,15 @@ namespace ParamsUI.UITK
                 }
 
                 // Click de pestaña → mostrar página
-                tab.RegisterValueChangedCallback(evt =>
-                {
-                    if (!evt.newValue) return;
-                    SelectTab(key, toggles, pageByKey);
-                });
+                var tabKey = tab.Key;
+                tab.clicked += () => SelectTab(tabKey, tabs, pageByKey);
             }
 
             // Selecciona la primera pestaña
-            var first = toggles.FirstOrDefault();
+            var first = tabs.FirstOrDefault();
             if (first != null)
             {
-                first.SetValueWithoutNotify(true);
-                SelectTab(first.text, toggles, pageByKey);
+                SelectTab(first.Key, tabs, pageByKey);
             }
 
             // Búsqueda: filtra solo en la página activa
@@ -166,13 +160,37 @@ namespace ParamsUI.UITK
         }
 
         // Helpers ------------------------------------------------------------
-        static void SelectTab(string key, List<ToolbarToggle> toggles, Dictionary<string, VisualElement> pageByKey)
+        static void SelectTab(string key, List<TabButton> tabs, Dictionary<string, VisualElement> pageByKey)
         {
-            foreach (var t in toggles)
-                t.SetValueWithoutNotify(t.text == key);
+            if (!pageByKey.ContainsKey(key)) return;
+
+            foreach (var t in tabs)
+                t.SetSelectedWithoutNotify(t.Key == key);
 
             foreach (var kv in pageByKey)
                 kv.Value.style.display = kv.Key == key ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        sealed class TabButton : Button
+        {
+            bool _selected;
+
+            public string Key { get; }
+
+            public TabButton(string key)
+            {
+                Key = key;
+                text = key;
+                AddToClassList("params-tab");
+                focusable = false;
+            }
+
+            public void SetSelectedWithoutNotify(bool value)
+            {
+                if (_selected == value) return;
+                _selected = value;
+                EnableInClassList("params-tab--selected", _selected);
+            }
         }
 
         static string ExtractLabel(VisualElement ve)
