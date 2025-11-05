@@ -11,6 +11,7 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
 
     SphereFieldCameraController _controller;
     IParam _fractalTypeParam;
+    IParam _cameraModeParam;
 
     void Start()
     {
@@ -29,7 +30,7 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
 
         if (_controller != null)
         {
-            cat.Add(new ParamDef<SphereFieldCameraController.CameraMode>("camera_mode", "Camera Mode",
+            _cameraModeParam = cat.Add(new ParamDef<SphereFieldCameraController.CameraMode>("camera_mode", "Camera Mode",
                     () => _controller.Mode,
                     v => _controller.Mode = v)
                 .InGroup("Camera"));
@@ -75,17 +76,24 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
 
         var powerMeta = ParamMeta.Range(-12, 12, 0.1);
         powerMeta.VisibleIf = () => IsFractalSelected(FractalType.Mandelbulb);
+        var mengerBoundsMeta = new ParamMeta()
+            .WithVectorSlider(0.25, 2.5, 0.01, "X", "Y", "Z");
+        mengerBoundsMeta.VisibleIf = () => IsFractalSelected(FractalType.MengerSponge);
+
         cat.Add(new ParamDef<Vector3>("menger_bounds", "Menger Bounds (xyz)",
                 () => binder.GetVector("menger_bounds"),
                 v  => binder.SetVector("menger_bounds", v))
             .InGroup("Fractal")
-            .WithMeta(new ParamMeta().WithVectorSlider(0.25, 2.5, 0.01, "X", "Y", "Z")));
+            .WithMeta(mengerBoundsMeta));
+
+        var mengerCrossThicknessMeta = ParamMeta.Range(0.1, 2.5, 0.01);
+        mengerCrossThicknessMeta.VisibleIf = () => IsFractalSelected(FractalType.MengerSponge);
 
         cat.Add(new ParamDef<float>("menger_cross_thickness", "Menger Cross Thickness",
                 () => binder.GetFloat("menger_cross_thickness"),
                 v  => binder.SetFloat("menger_cross_thickness", Mathf.Clamp(v, 0.1f, 2.5f)))
             .InGroup("Fractal")
-            .WithMeta(ParamMeta.Range(0.1, 2.5, 0.01)));
+            .WithMeta(mengerCrossThicknessMeta));
 
         cat.Add(new ParamDef<float>("power", "Mandelbulb Power",
             () => binder.GetFloat("power"),
@@ -128,29 +136,42 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
             .InGroup("Fractal")
             .WithMeta(juliaMeta));
 
-        cat.Add(new ParamDef<int>("sierpinski_iterations", "Sierpinski Iterations",
-                () => binder.GetInt("sierpinski_iterations"),
-                v  => binder.SetInt("sierpinski_iterations", Mathf.Clamp(v, 1, 30)))
+        var sierpinskiIterationsMeta = ParamMeta.Range(1, 30, 1);
+        sierpinskiIterationsMeta.VisibleIf = () => IsFractalSelected(FractalType.Sierpinski);
+
+        cat.Add(new ParamDef<float>("sierpinski_iterations", "Sierpinski Iterations",
+                () => binder.GetFloat("sierpinski_iterations"),
+                v  => binder.SetFloat("sierpinski_iterations", Mathf.Clamp(v, 1, 30)))
             .InGroup("Fractal")
-            .WithMeta(ParamMeta.Range(1, 30, 1)));
+            .WithMeta(sierpinskiIterationsMeta));
+
+        var sierpinskiScaleMeta = ParamMeta.Range(1.1, 3.0, 0.01);
+        sierpinskiScaleMeta.VisibleIf = () => IsFractalSelected(FractalType.Sierpinski);
 
         cat.Add(new ParamDef<float>("sierpinski_scale", "Sierpinski Scale",
                 () => binder.GetFloat("sierpinski_scale"),
                 v  => binder.SetFloat("sierpinski_scale", Mathf.Clamp(v, 1.1f, 3.0f)))
             .InGroup("Fractal")
-            .WithMeta(ParamMeta.Range(1.1, 3.0, 0.01)));
+            .WithMeta(sierpinskiScaleMeta));
+
+        var sierpinskiOffsetMeta = new ParamMeta()
+            .WithVectorSlider(0.0, 2.5, 0.01, "X", "Y", "Z");
+        sierpinskiOffsetMeta.VisibleIf = () => IsFractalSelected(FractalType.Sierpinski);
 
         cat.Add(new ParamDef<Vector3>("sierpinski_offset_vec", "Sierpinski Offset (xyz)",
                 () => binder.GetVector("sierpinski_offset_vec"),
                 v  => binder.SetVector("sierpinski_offset_vec", v))
             .InGroup("Fractal")
-            .WithMeta(new ParamMeta().WithVectorSlider(0.0, 2.5, 0.01, "X", "Y", "Z")));
+            .WithMeta(sierpinskiOffsetMeta));
+
+        var sierpinskiStrutThicknessMeta = ParamMeta.Range(0.1, 2.5, 0.01);
+        sierpinskiStrutThicknessMeta.VisibleIf = () => IsFractalSelected(FractalType.Sierpinski);
 
         cat.Add(new ParamDef<float>("sierpinski_strut_thickness", "Sierpinski Strut Thickness",
                 () => binder.GetFloat("sierpinski_strut_thickness"),
                 v  => binder.SetFloat("sierpinski_strut_thickness", Mathf.Clamp(v, 0.1f, 2.5f)))
             .InGroup("Fractal")
-            .WithMeta(ParamMeta.Range(0.1, 2.5, 0.01)));
+            .WithMeta(sierpinskiStrutThicknessMeta));
 
         // ── Luz / Orbit ───────────────────────────────────────────────────
         var lightSliderMeta = new ParamMeta()
@@ -254,6 +275,7 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
 
     void OnCameraModeChanged(SphereFieldCameraController.CameraMode mode)
     {
+        _cameraModeParam?.SetBoxed(mode);
         if (window != null)
         {
             window.Visible = mode != SphereFieldCameraController.CameraMode.Free;

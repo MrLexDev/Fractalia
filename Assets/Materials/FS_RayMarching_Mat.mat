@@ -82,9 +82,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - MB_BOX_LIMIT: 1.808
-    - MB_FIXED_RADIUS: 6.783
-    - MB_MIN_RADIUS: 4.321
+    - MB_BOX_LIMIT: 0.432
+    - MB_FIXED_RADIUS: 2.716
+    - MB_MIN_RADIUS: 1.246
     - MB_SCALE: -1.26
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
@@ -124,7 +124,7 @@ Material:
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
-    - ao_brightness: 2.86
+    - ao_brightness: 2.65
     - bailout: 2
     - cam_fov: 102.3
     - cell_size: 4.43
@@ -149,12 +149,16 @@ Material:
     - lod_near_distance: 2
     - max_ray_distance: 50
     - max_steps: 177
+    - menger_cross_thickness: 0.425
     - moon_radius: 0.08
     - normal_delta: 0.0001
     - normal_delta_far: 0.003
     - orbit_scale: 1.042
     - param_hue: 0.1
-    - power: 4.13
+    - power: 4.39
+    - sierpinski_iterations: 16.33
+    - sierpinski_scale: 1.762
+    - sierpinski_strut_thickness: 0.439
     - sphere_radius: 1.4
     - surface_epsilon: 0.0001
     - surface_epsilon_far: 0.005
@@ -169,20 +173,22 @@ Material:
     - _LightDir: {r: 1, g: 1, b: -1, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - base_color: {r: 0.22, g: 0, b: 0.77, a: 1}
-    - cam_forward: {r: -0.61837196, g: 0, b: 0.7858856, a: 0}
-    - cam_pos: {r: 1.5146955, g: 0, b: -1.9250189, a: 0}
-    - cam_right: {r: 0.7858856, g: 0, b: 0.61837196, a: 0}
+    - cam_forward: {r: 0.99978936, g: 0, b: 0.02052301, a: 0}
+    - cam_pos: {r: -2.448974, g: 0, b: -0.050270777, a: 0}
+    - cam_right: {r: 0.02052301, g: 0, b: -0.99978936, a: 0}
     - cam_up: {r: -0, g: -1, b: -0, a: 0}
     - glow_color: {r: 1, g: 0.85, b: 0.7, a: 1}
-    - julia_constant: {r: -0.100000024, g: -0.3, b: -0.74, a: 0}
+    - julia_constant: {r: -0.27000004, g: -0.23000003, b: -0.74, a: 0}
     - light_direction: {r: -0.33, g: -0.65000004, b: -1, a: 0}
+    - menger_bounds: {r: 1.03, g: 1.11, b: 1.17, a: 0}
     - moon_color: {r: 0.0754717, g: 0.0754717, b: 0.0754717, a: 1}
     - moon_pos: {r: 0.86, g: 0.21, b: 0, a: 0}
-    - orbit_color_0: {r: 0.45, g: 0.45999998, b: 0.88, a: 1}
+    - orbit_color_0: {r: 0.39, g: 0.45999998, b: 0.88, a: 1}
     - orbit_color_1: {r: 0.69, g: 0.32, b: 0.22, a: 1}
     - orbit_color_2: {r: 0.16, g: 0.29, b: 0.88, a: 1}
     - orbit_color_3: {r: 0.51, g: 0.68, b: 0, a: 1}
     - orbit_thresholds: {r: 0.65, g: 0.68, b: 0.79999995, a: 0.25}
+    - sierpinski_offset_vec: {r: 1.24, g: 1.54, b: 1.23, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &4785929847013466859
