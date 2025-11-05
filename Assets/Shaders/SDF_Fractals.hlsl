@@ -62,17 +62,20 @@ fractal_output sdf_mandelbulb(float3 position)
     return result;
 }
 
-float sd_cross(float3 p, float b)
+float sd_box(float3 p, float3 b)
 {
-    float3 q = abs(p);
-    return min(min(max(q.x, q.y), max(q.y, q.z)), max(q.z, q.x)) - b;
+    float3 q = abs(p) - b;
+    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
 fractal_output sdf_menger_sponge(float3 position)
 {
     fractal_output result = {0.0, 0.0, 0.0, 1e20};
 
-    float distance = sd_cross(position, 1.0);
+    float3 bounds = max(menger_bounds, float3(0.05, 0.05, 0.05));
+    float cross_thickness = max(menger_cross_thickness, 0.0);
+
+    float distance = sd_box(position, bounds);
     float scale = 1.0;
     float orbit_min = length(position);
 
@@ -83,7 +86,7 @@ fractal_output sdf_menger_sponge(float3 position)
         scale *= 3.0;
 
         float3 r = abs(1.0 - 3.0 * abs(cell));
-        float c = (min(min(r.x, r.y), r.z) - 1.0) / scale;
+        float c = (min(min(r.x, r.y), r.z) - cross_thickness) / scale;
         distance = max(distance, c);
 
         orbit_min = min(orbit_min, length(cell));
@@ -197,21 +200,18 @@ fractal_output sdf_mandelbox(float3 position)
 // -----------------------------------------------------------------------
 // SDF para una Pirámide de Sierpinski (Tetraedro de Sierpinski)
 // -----------------------------------------------------------------------
-static const int   SIERPINSKI_ITERATIONS = 15;
-static const float SIERPINSKI_SCALE      = 2.0;
-static const float3 SIERPINSKI_OFFSET_VEC = float3(1.0, 1.0, 1.0);
-
-static const float SIERPINSKI_STRUT_THICKNESS = 1.2; // Ajusta el "grosor" de las barras del fractal.
-                                                     // Corresponde al radio 'C' en la fórmula (length(p) - C) / s.
-                                                     // Un valor entre 1.0 y 1.5 suele funcionar bien con un OFFSET_VEC de magnitud sqrt(3).
-
 fractal_output sdf_sierpinski(float3 p)
 {
     fractal_output result = {0.0, 0.0, 0.0, 1e20};
+    int iterations_count = max(sierpinski_iterations, 1);
+    float scale = max(sierpinski_scale, 1.01);
+    float3 offset_vec = sierpinski_offset_vec;
+    float strut_thickness = max(sierpinski_strut_thickness, 0.0);
+
     float accumulated_total_scale = 1.0;
     float orbit_min = 1e20;
 
-    for (int i = 0; i < SIERPINSKI_ITERATIONS; ++i)
+    for (int i = 0; i < iterations_count; ++i)
     {
         // Si p.x + p.y < 0, refleja p a través del plano x = -y
         if (p.x + p.y < 0.0) { p.xy = float2(-p.y, -p.x); }
@@ -219,13 +219,13 @@ fractal_output sdf_sierpinski(float3 p)
         if (p.x + p.z < 0.0) { p.xz = float2(-p.z, -p.x); }
         // Si p.y + p.z < 0, refleja p a través del plano y = -z
         if (p.y + p.z < 0.0) { p.yz = float2(-p.z, -p.y); }
-        
-        p = p * SIERPINSKI_SCALE - SIERPINSKI_OFFSET_VEC * (SIERPINSKI_SCALE - 1.0);
-        
+
+        p = p * scale - offset_vec * (scale - 1.0);
+
         orbit_min = min(orbit_min, length(p));
-        accumulated_total_scale *= SIERPINSKI_SCALE;
+        accumulated_total_scale *= scale;
     }
-    result.sdf_distance = (length(p) - SIERPINSKI_STRUT_THICKNESS) / accumulated_total_scale;
+    result.sdf_distance = (length(p) - strut_thickness) / accumulated_total_scale;
     result.orbit_min_dist = orbit_min;
     return result;
 }

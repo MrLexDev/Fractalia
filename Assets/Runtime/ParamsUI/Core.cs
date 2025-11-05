@@ -84,7 +84,7 @@ namespace ParamsUI
 
         // Otros
         public string Tooltip { get; set; }
-        public Func<bool> VisibleIf { get; set; } // puede ser null
+        public Func<bool> VisibleIf { get; set; }
         public string Unit { get; set; }
 
         public static ParamMeta Range(double min, double max, double? step = null, string unit = null) =>
@@ -142,7 +142,12 @@ namespace ParamsUI
         public IReadOnlyList<CommandDef> AllCommands => _commands;
 
         public void Add(IParam p) => _params.Add(p);
-        public void Add<T>(ParamDef<T> def) => _params.Add(def.Build());
+        public IParam Add<T>(ParamDef<T> def)
+        {
+            var param = def.Build();
+            _params.Add(param);
+            return param;
+        }
         public void Add(CommandDef cmd) => _commands.Add(cmd);
 
         public void Clear() { _params.Clear(); _commands.Clear(); }

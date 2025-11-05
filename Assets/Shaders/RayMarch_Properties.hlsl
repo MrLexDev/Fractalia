@@ -31,10 +31,18 @@ CBUFFER_START(RaymarchProps)
 
         float3 julia_constant = float3(-0.745, 0.113, 0.274);
 
+        float3 menger_bounds;
+        float  menger_cross_thickness;
+
         // Parámetros del fractal
         int    iterations;
         float  power;
         int    fractal_type;
+
+        int    sierpinski_iterations;
+        float  sierpinski_scale;
+        float3 sierpinski_offset_vec;
+        float  sierpinski_strut_thickness;
 
         // Light
         float3 light_direction;

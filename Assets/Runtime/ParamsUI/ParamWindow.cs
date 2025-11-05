@@ -14,6 +14,7 @@ namespace ParamsUI.UITK
 
         readonly List<IControlBuilder> _builders = new();
         ButtonBuilder _buttonBuilder;
+        string _selectedTabKey;
 
         void Awake()
         {
@@ -48,6 +49,8 @@ namespace ParamsUI.UITK
 
             ApplyStyles(root); // <- ver abajo
             ApplyVisibility();
+
+            var previousTab = _selectedTabKey;
 
             // Header
             /*
@@ -135,11 +138,11 @@ namespace ParamsUI.UITK
                 tab.clicked += () => SelectTab(tabKey, tabs, pageByKey);
             }
 
-            // Selecciona la primera pestaña
-            var first = tabs.FirstOrDefault();
-            if (first != null)
+            // Selecciona la pestaña previamente activa o la primera disponible
+            var selectedTab = tabs.FirstOrDefault(t => t.Key == previousTab) ?? tabs.FirstOrDefault();
+            if (selectedTab != null)
             {
-                SelectTab(first.Key, tabs, pageByKey);
+                SelectTab(selectedTab.Key, tabs, pageByKey);
             }
 
             // Búsqueda: filtra solo en la página activa
@@ -160,9 +163,11 @@ namespace ParamsUI.UITK
         }
 
         // Helpers ------------------------------------------------------------
-        static void SelectTab(string key, List<TabButton> tabs, Dictionary<string, VisualElement> pageByKey)
+        void SelectTab(string key, List<TabButton> tabs, Dictionary<string, VisualElement> pageByKey)
         {
             if (!pageByKey.ContainsKey(key)) return;
+
+            _selectedTabKey = key;
 
             foreach (var t in tabs)
                 t.SetSelectedWithoutNotify(t.Key == key);

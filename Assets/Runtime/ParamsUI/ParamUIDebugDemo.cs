@@ -10,12 +10,22 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
     public ShaderParamBinderMaterial binder;
 
     SphereFieldCameraController _controller;
+    IParam _fractalTypeParam;
 
     void Start()
     {
         var cat = new ParamCatalog();
         int fractalCount = Enum.GetValues(typeof(FractalType)).Length;
         _controller = binder != null ? binder.targetMaterialHolder : null;
+
+        FractalType GetSelectedFractal()
+        {
+            if (binder == null) return FractalType.Mandelbulb;
+            int selected = Mathf.Clamp(binder.GetInt("fractal_type"), 0, fractalCount - 1);
+            return (FractalType)selected;
+        }
+
+        bool IsFractalSelected(FractalType type) => GetSelectedFractal() == type;
 
         if (_controller != null)
         {
@@ -58,42 +68,89 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
             .InGroup("Camera")
             .WithMeta(ParamMeta.Range(1, 160, 1)));
 
-        cat.Add(new ParamDef<FractalType>("fractal_type", "Fractal Type",
+        _fractalTypeParam = cat.Add(new ParamDef<FractalType>("fractal_type", "Fractal Type",
             () => (FractalType)Mathf.Clamp(binder.GetInt("fractal_type"), 0, fractalCount - 1),
             v  => binder.SetInt("fractal_type", (int)v))
             .InGroup("Fractal"));
+
+        var powerMeta = ParamMeta.Range(-12, 12, 0.1);
+        powerMeta.VisibleIf = () => IsFractalSelected(FractalType.Mandelbulb);
+        cat.Add(new ParamDef<Vector3>("menger_bounds", "Menger Bounds (xyz)",
+                () => binder.GetVector("menger_bounds"),
+                v  => binder.SetVector("menger_bounds", v))
+            .InGroup("Fractal")
+            .WithMeta(new ParamMeta().WithVectorSlider(0.25, 2.5, 0.01, "X", "Y", "Z")));
+
+        cat.Add(new ParamDef<float>("menger_cross_thickness", "Menger Cross Thickness",
+                () => binder.GetFloat("menger_cross_thickness"),
+                v  => binder.SetFloat("menger_cross_thickness", Mathf.Clamp(v, 0.1f, 2.5f)))
+            .InGroup("Fractal")
+            .WithMeta(ParamMeta.Range(0.1, 2.5, 0.01)));
 
         cat.Add(new ParamDef<float>("power", "Mandelbulb Power",
             () => binder.GetFloat("power"),
             v  => binder.SetFloat("power", Mathf.Clamp(v, -12f, 12f)))
             .InGroup("Fractal")
-            .WithMeta(ParamMeta.Range(-12, 12, 0.1)));
+            .WithMeta(powerMeta));
 
         // ── Mandelbulb params (MB_*) ──────────────────────────────────────
+        var mandelBoxMeta = ParamMeta.Range(0, 12, 0.1);
+        mandelBoxMeta.VisibleIf = () => IsFractalSelected(FractalType.Mandelbox);
+
         cat.Add(new ParamDef<float>("MB_MIN_RADIUS", "Mandel Box Min Radius",
             () => binder.GetFloat("MB_MIN_RADIUS"),
             v  => binder.SetFloat("MB_MIN_RADIUS", Mathf.Max(0f, v)))
             .InGroup("Fractal")
-            .WithMeta(ParamMeta.Range(0, 12, 0.1)));
+            .WithMeta(mandelBoxMeta));
 
+        var mandelBoxFixedMeta = ParamMeta.Range(0, 12, 0.1);
+        mandelBoxFixedMeta.VisibleIf = () => IsFractalSelected(FractalType.Mandelbox);
         cat.Add(new ParamDef<float>("MB_FIXED_RADIUS", "Mandel Box Fixed Radius",
             () => binder.GetFloat("MB_FIXED_RADIUS"),
             v  => binder.SetFloat("MB_FIXED_RADIUS", Mathf.Max(0f, v)))
             .InGroup("Fractal")
-            .WithMeta(ParamMeta.Range(0, 12, 0.1)));
+            .WithMeta(mandelBoxFixedMeta));
 
+        var mandelBoxLimitMeta = ParamMeta.Range(0, 12, 0.1);
+        mandelBoxLimitMeta.VisibleIf = () => IsFractalSelected(FractalType.Mandelbox);
         cat.Add(new ParamDef<float>("MB_BOX_LIMIT", "Mandel Box Box Limit",
             () => binder.GetFloat("MB_BOX_LIMIT"),
             v  => binder.SetFloat("MB_BOX_LIMIT", Mathf.Max(0f, v)))
             .InGroup("Fractal")
-            .WithMeta(ParamMeta.Range(0, 12, 0.1)));
-        
+            .WithMeta(mandelBoxLimitMeta));
+
+        var juliaMeta = new ParamMeta()
+            .WithVectorSlider(-1.5, 1.5, 0.01, "X", "Y", "Z");
+        juliaMeta.VisibleIf = () => IsFractalSelected(FractalType.QuaternionJulia);
         cat.Add(new ParamDef<Vector3>("julia_constant", "Julia Constant (xyz)",
                 () => binder.GetVector("julia_constant"),
                 v  => binder.SetVector("julia_constant", v))
             .InGroup("Fractal")
-            .WithMeta(new ParamMeta()
-                .WithVectorSlider(-1.5, 1.5, 0.01, "X", "Y", "Z")));
+            .WithMeta(juliaMeta));
+
+        cat.Add(new ParamDef<int>("sierpinski_iterations", "Sierpinski Iterations",
+                () => binder.GetInt("sierpinski_iterations"),
+                v  => binder.SetInt("sierpinski_iterations", Mathf.Clamp(v, 1, 30)))
+            .InGroup("Fractal")
+            .WithMeta(ParamMeta.Range(1, 30, 1)));
+
+        cat.Add(new ParamDef<float>("sierpinski_scale", "Sierpinski Scale",
+                () => binder.GetFloat("sierpinski_scale"),
+                v  => binder.SetFloat("sierpinski_scale", Mathf.Clamp(v, 1.1f, 3.0f)))
+            .InGroup("Fractal")
+            .WithMeta(ParamMeta.Range(1.1, 3.0, 0.01)));
+
+        cat.Add(new ParamDef<Vector3>("sierpinski_offset_vec", "Sierpinski Offset (xyz)",
+                () => binder.GetVector("sierpinski_offset_vec"),
+                v  => binder.SetVector("sierpinski_offset_vec", v))
+            .InGroup("Fractal")
+            .WithMeta(new ParamMeta().WithVectorSlider(0.0, 2.5, 0.01, "X", "Y", "Z")));
+
+        cat.Add(new ParamDef<float>("sierpinski_strut_thickness", "Sierpinski Strut Thickness",
+                () => binder.GetFloat("sierpinski_strut_thickness"),
+                v  => binder.SetFloat("sierpinski_strut_thickness", Mathf.Clamp(v, 0.1f, 2.5f)))
+            .InGroup("Fractal")
+            .WithMeta(ParamMeta.Range(0.1, 2.5, 0.01)));
 
         // ── Luz / Orbit ───────────────────────────────────────────────────
         var lightSliderMeta = new ParamMeta()
@@ -162,6 +219,11 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
         window.Catalog = cat;
         window.Rebuild();
 
+        if (_fractalTypeParam != null)
+        {
+            _fractalTypeParam.Changed += OnFractalTypeChanged;
+        }
+
         if (_controller != null)
         {
             _controller.ModeChanged += OnCameraModeChanged;
@@ -171,9 +233,22 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
 
     void OnDestroy()
     {
+        if (_fractalTypeParam != null)
+        {
+            _fractalTypeParam.Changed -= OnFractalTypeChanged;
+        }
+
         if (_controller != null)
         {
             _controller.ModeChanged -= OnCameraModeChanged;
+        }
+    }
+
+    void OnFractalTypeChanged(IParam _)
+    {
+        if (window != null)
+        {
+            window.Rebuild();
         }
     }
 

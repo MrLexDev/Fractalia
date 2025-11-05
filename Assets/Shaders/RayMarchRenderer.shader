@@ -24,12 +24,20 @@ Shader "Custom/RayMarchRenderer"
         MB_MIN_RADIUS       ("MB_MIN_RADIUS",       Float)    = 0.5
         MB_FIXED_RADIUS     ("MB_FIXED_RADIUS",     Float)    = 1
         MB_BOX_LIMIT        ("MB_BOX_LIMIT",        Float)    = 1
-        
+
         julia_constant      ("Julia Constant",      Vector)   = (-0.745, 0.113, 0.274)
+
+        menger_bounds       ("Menger Bounds",       Vector)   = (1, 1, 1, 0)
+        menger_cross_thickness ("Menger Cross Thickness", Float) = 1
 
         iterations          ("Iterations",          Int)    = 10
         power               ("Power",               Float)  = 4.0
         fractal_type        ("Fractal Type",        Int)    = 0
+
+        sierpinski_iterations    ("Sierpinski Iterations",    Int)   = 15
+        sierpinski_scale         ("Sierpinski Scale",         Float) = 2
+        sierpinski_offset_vec    ("Sierpinski Offset",        Vector)= (1, 1, 1, 0)
+        sierpinski_strut_thickness("Sierpinski Strut Thickness", Float) = 1.2
 
         light_direction     ("Light Direction",     Vector) = (0, 0, 0)
 
