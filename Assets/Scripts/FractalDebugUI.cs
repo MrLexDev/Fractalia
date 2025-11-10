@@ -24,7 +24,6 @@ public class FractalDebugUI : MonoBehaviour
     private int _maxSteps;
     private Color _baseColor;
     private int _selectedFractalIndex;
-
     private void Start()
     {
         if (controller && !rayMarchMaterial)
