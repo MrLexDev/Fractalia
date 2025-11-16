@@ -38,7 +38,7 @@ public sealed class ParamUIDebugDemo : MonoBehaviour
             var freeSpeedMeta = ParamMeta.Range(0.1, 100, 0.1);
             freeSpeedMeta.Unit = "m/s";
 
-            cat.Add(new ParamDef<float>("camera_free_move_speed", "Free Move Speed",
+            cat.Add(new ParamDef<float>("camera_free_move_speed", "Free Camera Move Speed",
                     () => _controller.MoveSpeed,
                     v => _controller.MoveSpeed = v)
                 .InGroup("Camera")
