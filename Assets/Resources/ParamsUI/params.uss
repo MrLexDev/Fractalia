@@ -2,8 +2,8 @@
     --bg: #0d1016;
     --panel: #121622;
     --border: #2a2f3a;
-    --fg: #2a2f3a;
-    --text: #e6ebf3;
+    --fg: #0d1500;
+    --text: #0d1500;
     --muted: #9aa4b2;
     --accent: #5aa1ff;
     --label-width: 140px;
@@ -16,6 +16,7 @@
 .params-root {
     background-color: rgba(0,0,0,0); /* no cubre la escena */
     color: var(--fg);
+    position: relative;
 }
 
 /* Sidebar flotante a la derecha */
@@ -132,3 +133,41 @@
 
 /* Botones */
 .param-button { margin-top: 4px; }
+
+.params-footer {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.params-footer .param-button {
+    width: 100%;
+}
+
+.params-fullscreen-button {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10%;
+    border: 1px solid rgba(90, 161, 255, 0.5);
+    background-color: rgba(180, 230, 255, 0.6);
+    color: var(--text);
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    font-family: monospace;
+    padding: 0;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.params-fullscreen-button:hover {
+    background-color: rgba(90, 161, 255, 0.2);
+    color: var(--text);
+}
+
+.params-fullscreen-button--active {
+    background-color: var(--accent);
+    color: #05070d;
+}

@@ -16,6 +16,12 @@ namespace ParamsUI.UITK
         ButtonBuilder _buttonBuilder;
         string _selectedTabKey;
 
+#if UNITY_WEBGL
+        Button _webGlFullScreenButton;
+        bool _webGlFullScreenVisualState;
+        IVisualElementScheduledItem _webGlFullScreenButtonUpdater;
+#endif
+
         void Awake()
         {
             if (_uiDocument == null) _uiDocument = GetComponent<UIDocument>();
@@ -40,6 +46,9 @@ namespace ParamsUI.UITK
         public void Rebuild()
         {
             var root = _uiDocument.rootVisualElement;
+#if UNITY_WEBGL
+            DisposeWebGlFullScreenButton();
+#endif
             root.Clear();
             if (Catalog == null)
             {
@@ -160,6 +169,10 @@ namespace ParamsUI.UITK
                     child.style.display = match ? DisplayStyle.Flex : DisplayStyle.None;
                 }
             });*/
+
+#if UNITY_WEBGL
+            MaybeAddWebGlFullScreenButton(root);
+#endif
         }
 
         // Helpers ------------------------------------------------------------
@@ -248,5 +261,57 @@ namespace ParamsUI.UITK
             if (root == null) return;
             root.style.display = _isVisible ? DisplayStyle.Flex : DisplayStyle.None;
         }
+
+#if UNITY_WEBGL
+        void DisposeWebGlFullScreenButton()
+        {
+            _webGlFullScreenButtonUpdater?.Pause();
+            _webGlFullScreenButtonUpdater = null;
+            _webGlFullScreenButton = null;
+        }
+
+        void MaybeAddWebGlFullScreenButton(VisualElement root)
+        {
+            if (Application.platform != RuntimePlatform.WebGLPlayer) return;
+            if (root == null) return;
+
+            _webGlFullScreenButton = new Button();
+            _webGlFullScreenButton.AddToClassList("params-fullscreen-button");
+            _webGlFullScreenButton.style.position = Position.Absolute;
+            _webGlFullScreenButton.style.right = 12f;
+            _webGlFullScreenButton.style.bottom = 12f;
+            _webGlFullScreenButton.style.width = 40f;
+            _webGlFullScreenButton.style.height = 40f;
+            _webGlFullScreenButton.focusable = false;
+            _webGlFullScreenButton.tooltip = "Enter fullscreen";
+            _webGlFullScreenButton.clicked += () =>
+            {
+                bool targetState = !Screen.fullScreen;
+                Screen.fullScreen = targetState;
+                UpdateWebGlFullScreenButtonVisuals(targetState);
+            };
+
+            root.Add(_webGlFullScreenButton);
+            UpdateWebGlFullScreenButtonVisuals(Screen.fullScreen);
+
+            _webGlFullScreenButtonUpdater = _webGlFullScreenButton.schedule
+                .Execute(() => UpdateWebGlFullScreenButtonVisuals())
+                .Every(200);
+        }
+
+        void UpdateWebGlFullScreenButtonVisuals(bool? forcedState = null)
+        {
+            if (_webGlFullScreenButton == null) return;
+
+            bool isFullScreen = forcedState ?? Screen.fullScreen;
+            if (!forcedState.HasValue && _webGlFullScreenVisualState == isFullScreen)
+                return;
+
+            _webGlFullScreenVisualState = isFullScreen;
+            _webGlFullScreenButton.tooltip = isFullScreen ? "Exit fullscreen" : "Enter fullscreen";
+            _webGlFullScreenButton.EnableInClassList("params-fullscreen-button--active", isFullScreen);
+            _webGlFullScreenButton.text = isFullScreen ? "][" : "[ ⛶ ]";
+        }
+#endif
     }
 }
