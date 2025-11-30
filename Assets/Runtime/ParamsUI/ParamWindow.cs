@@ -20,6 +20,7 @@ namespace ParamsUI.UITK
         Button _webGlFullScreenButton;
         bool _webGlFullScreenVisualState;
         IVisualElementScheduledItem _webGlFullScreenButtonUpdater;
+        float _lastToggleTime;
 #endif
 
         void Awake()
@@ -47,7 +48,7 @@ namespace ParamsUI.UITK
         {
             var root = _uiDocument.rootVisualElement;
 #if UNITY_WEBGL
-            DisposeWebGlFullScreenButton();
+            //DisposeWebGlFullScreenButton();
 #endif
             root.Clear();
             if (Catalog == null)
@@ -171,7 +172,7 @@ namespace ParamsUI.UITK
             });*/
 
 #if UNITY_WEBGL
-            MaybeAddWebGlFullScreenButton(root);
+            //MaybeAddWebGlFullScreenButton(root);
 #endif
         }
 
@@ -263,6 +264,8 @@ namespace ParamsUI.UITK
         }
 
 #if UNITY_WEBGL
+        
+
         void DisposeWebGlFullScreenButton()
         {
             _webGlFullScreenButtonUpdater?.Pause();
@@ -277,40 +280,73 @@ namespace ParamsUI.UITK
 
             _webGlFullScreenButton = new Button();
             _webGlFullScreenButton.AddToClassList("params-fullscreen-button");
+
+            // Estilos estáticos
             _webGlFullScreenButton.style.position = Position.Absolute;
             _webGlFullScreenButton.style.right = 12f;
             _webGlFullScreenButton.style.bottom = 12f;
-            _webGlFullScreenButton.style.width = 40f;
-            _webGlFullScreenButton.style.height = 40f;
-            _webGlFullScreenButton.focusable = false;
-            _webGlFullScreenButton.tooltip = "Enter fullscreen";
-            _webGlFullScreenButton.clicked += () =>
-            {
-                bool targetState = !Screen.fullScreen;
-                Screen.fullScreen = targetState;
-                UpdateWebGlFullScreenButtonVisuals(targetState);
-            };
+            _webGlFullScreenButton.focusable = false; 
+
+            // SOLUCIÓN: Usamos PointerUpEvent en lugar de clicked.
+            // PointerUp ocurre en el mismo frame del levantamiento del dedo/ratón,
+            // garantizando que el navegador acepte la solicitud de FullScreen.
+            _webGlFullScreenButton.RegisterCallback<PointerUpEvent>(OnFullScreenPointerUp);
 
             root.Add(_webGlFullScreenButton);
+            
+            // Estado visual inicial
             UpdateWebGlFullScreenButtonVisuals(Screen.fullScreen);
 
+            // Scheduler para detectar cambios externos (ej. tecla ESC)
             _webGlFullScreenButtonUpdater = _webGlFullScreenButton.schedule
-                .Execute(() => UpdateWebGlFullScreenButtonVisuals())
+                .Execute(UpdateWebGlFullScreenScheduled)
                 .Every(200);
         }
 
-        void UpdateWebGlFullScreenButtonVisuals(bool? forcedState = null)
+        void OnFullScreenPointerUp(PointerUpEvent evt)
+        {
+            // Solo actuar con clic izquierdo (0)
+            if (evt.button != 0) return;
+
+            // Evitar spam de clicks (Debounce de 0.2s)
+            if (Time.unscaledTime - _lastToggleTime < 0.2f) return;
+            _lastToggleTime = Time.unscaledTime;
+
+            // Cambiar estado
+            bool targetState = !Screen.fullScreen;
+            Screen.fullScreen = targetState;
+
+            // Actualización visual optimista inmediata
+            UpdateWebGlFullScreenButtonVisuals(targetState);
+            
+            // Detenemos la propagación para que no afecte a otros elementos UI debajo
+            evt.StopPropagation();
+        }
+
+        void UpdateWebGlFullScreenScheduled()
+        {
+            // Si acabamos de hacer click (< 0.5s), respetamos la actualización visual optimista
+            // y no dejamos que el valor real de Unity (que puede tardar en cambiar) nos revierta el icono.
+            if (Time.unscaledTime - _lastToggleTime < 0.5f) return;
+
+            UpdateWebGlFullScreenButtonVisuals(Screen.fullScreen);
+        }
+
+        void UpdateWebGlFullScreenButtonVisuals(bool isFullScreen)
         {
             if (_webGlFullScreenButton == null) return;
 
-            bool isFullScreen = forcedState ?? Screen.fullScreen;
-            if (!forcedState.HasValue && _webGlFullScreenVisualState == isFullScreen)
+            // Cache de estado visual para evitar repintados innecesarios
+            if (_webGlFullScreenVisualState == isFullScreen && _webGlFullScreenButton.text != null) 
                 return;
 
             _webGlFullScreenVisualState = isFullScreen;
+            
             _webGlFullScreenButton.tooltip = isFullScreen ? "Exit fullscreen" : "Enter fullscreen";
             _webGlFullScreenButton.EnableInClassList("params-fullscreen-button--active", isFullScreen);
-            _webGlFullScreenButton.text = isFullScreen ? "][" : "[ ⛶ ]";
+            
+            // Iconos ASCII seguros
+            _webGlFullScreenButton.text = isFullScreen ? "><" : "[ ]";
         }
 #endif
     }
